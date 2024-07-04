@@ -1,0 +1,63 @@
+<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <ipsec-ikeless
+    xmlns="urn:ietf:params:xml:ns:yang:ietf-i2nsf-ikeless"
+    xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+        <sad>
+            <sad-entry>
+                <name>out/192.168.201.254/192.168.202.254</name>
+                <!-- My guess this is the rule number -->
+                <reqid>12</reqid>
+                <ipsec-sa-config>
+                    <spi>34502</spi>
+                    <!-- Fixed value -->
+                    <ext-seq-num>true</ext-seq-num>
+                    <!-- Fixed value -->
+                    <seq-overflow>false</seq-overflow>
+                    <traffic-selector>
+                        <!-- local-addresses -->
+                        <local-prefix>192.168.201.0/24</local-prefix>  
+                        <!-- <remote-addresses> -->
+                        <remote-prefix>192.168.202.0/24</remote-prefix>
+                        <!-- ???? -->
+                        <inner-protocol>any</inner-protocol>
+                    </traffic-selector>
+                    <!-- security-protocol -->
+                    <protocol-parameters>esp</protocol-parameters>
+                    <!-- mode -->
+                    <mode>tunnel</mode>
+                    <esp-sa>
+                        <!-- TODO check how the algorithms are parsed -->
+                        <encryption>
+                            <encryption-algorithm>3</encryption-algorithm>
+                            <!-- <key>01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef</key> -->
+                            <key>01:23:45:67:89:AB:CE:DF:01:23:45:67:89:AB:CE:DF</key>
+                            <iv>01:23:45:67:89:AB:CE:DF:01:23:45:67:89:AB:CE:DF</iv>
+                        </encryption>
+                        <integrity>
+                            <!-- //AUTH_HMAC_SHA1_96 -->
+                            <integrity-algorithm>2</integrity-algorithm>
+                            <key>01:23:45:67:89:AB:CE:DF:01:23:45:67:89:AB:CE:DF</key>
+                        </integrity>
+                    </esp-sa>
+                    <sa-lifetime-hard>
+                            <bytes>2000000</bytes>
+                            <packets>2000</packets>
+                            <time>15</time>
+                            <idle>120</idle>
+                    </sa-lifetime-hard>
+                    <sa-lifetime-soft>
+                            <bytes>1000000</bytes>
+                            <packets>1000</packets>
+                            <time>10</time>
+                            <idle>12</idle>
+                            <action>replace</action>
+                    </sa-lifetime-soft>
+                    <tunnel>
+                        <local>192.168.123.100</local>
+                        <remote>192.168.123.200</remote>
+                    </tunnel>
+                </ipsec-sa-config>
+            </sad-entry>
+        </sad>
+    </ipsec-ikeless>
+</config>

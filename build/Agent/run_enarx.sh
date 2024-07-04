@@ -1,0 +1,1 @@
+sudo docker run -v `pwd`/Enarx.toml:/enarx.toml -p 10000:10000 --name enarx_ccips -v `pwd`/target/wasm32-wasi/release/enarx.wasm:/i2nsf_enarx.wasm enarx/enarx:0.6.3 enarx run --wasmcfgfile /enarx.toml /i2nsf_enarx.wasm 
