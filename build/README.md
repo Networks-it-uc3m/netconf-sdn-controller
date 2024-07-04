@@ -26,7 +26,7 @@ docker push juancarlosvillenmolina/netopeer2:1.0.0
 # Standalone Agent from New Netopeer2
 
 ### Changes made
-- Makefile
+- CMakeLists
 - utils.c (add a ;)
 - Dockerfile
 
