@@ -67,7 +67,9 @@ public class AppWebResource extends AbstractWebResource {
     @POST
     @Path("storage")
     public Response Storage() throws Exception {
-        log.info("ESTO ES LO QUE HAY DENTRO DEL HASH MAP DE HANDLERS:\n\n"+StorageHandler.storage);
+        log.info("ESTO ES LO QUE HAY DENTRO DEL HASH MAP DE HANDLERS:\n"+StorageHandler.storage);
+        StorageHandler.stopTunnel(new RequestDeleteDTO(null,"out/172.20.0.3/in/172.20.0.2"));
+        log.info("ESTO ES LO QUE HAY DENTRO DEL HASH MAP DE HANDLERS:\n"+StorageHandler.storage);
         return Response.ok().build();
 
     }
@@ -82,21 +84,27 @@ public class AppWebResource extends AbstractWebResource {
     }
 
     @POST
-    @Path("reek2")
-    public Response Reek2() throws Exception {
-        StorageHandler.rekey("out/172.20.0.2/in/172.20.0.3_3");
-        StorageHandler.rekey("out/172.20.0.3/in/172.20.0.2_4");
-        return Response.ok().build();
-
+    @Path("delete")
+    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
+    public Response delete(RequestDeleteDTO request_del) throws Exception {
+        try {
+            StorageHandler.stopTunnel(request_del);
+            return Response.ok().build();
+        } catch (Exception e) {
+            log.info("Exception while stopping tunnel: ", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error stopping tunnel: " + e.getMessage())
+                    .build();
+        }
     }
 
     @POST
     @Path("edit-netconf")
-    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})//Ver si se puede hacer que llegue directamente el request nuestro
+    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
     public Response editNetconfConfig(RequestDTO reqdto) throws Exception {
         request req = RequestDTO.transformToRequest(reqdto);
-        String uri_device_1 = "netconf:172.20.0.2:830";//Cambiar por variable del request
-        String uri_device_2 = "netconf:172.20.0.3:830";
+        String uri_device_1 = "netconf:"+req.getNodes()[0].getIpControl()+":830";//Cambiar por variable del request
+        String uri_device_2 = "netconf:"+req.getNodes()[1].getIpControl()+":830";
         DeviceId new_device_1= DeviceId.deviceId(uri_device_1);
         DeviceId new_device_2= DeviceId.deviceId(uri_device_2);
         NetconfSession newDeviceSession_1 = StorageHandler.controller.getNetconfDevice(new_device_1).getSession();

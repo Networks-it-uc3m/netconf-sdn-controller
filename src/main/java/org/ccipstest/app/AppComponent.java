@@ -55,7 +55,7 @@ public class AppComponent  {
         NetopeerListener netListener = new NetopeerListener(deviceController);
         deviceController.addDeviceListener(netListener);
         StorageHandler.controller = deviceController;
-        StorageHandler.mastershipService = mastershipService;
+
 
         log.info("\nCCIPS STARTED\n");
 

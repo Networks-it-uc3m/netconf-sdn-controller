@@ -13,8 +13,12 @@ public class IpsecConfig {
     //public static int id=1; ///PARA ASIGNARLO
 
     private IPsecConfigType confType;
-    private String name;
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    private String name;
 
 
     private long spi;
@@ -23,8 +27,8 @@ public class IpsecConfig {
     private String origin; // Always outbound
     private String end;    // Always inbound
     // Prefix addresses only for g2g case
-    private String prefixOrigin=null;
-    private String prefixEnd=null;
+    private String prefixOrigin = null;
+    private String prefixEnd = null;
     // Data Addresses
     private String dataOrigin;
     private String dataEnd;
@@ -105,25 +109,45 @@ public class IpsecConfig {
         return this.reKeysDone;
     }
 
+    //    @Override
+//    public String toString() {
+//        return "IpsecConfig{" +
+//                "confType=" + confType +
+//                ", name='" + name + '\'' +
+//                ", spi=" + spi +
+//                ", reqId=" + reqId +
+//                ", origin='" + origin + '\'' +
+//                ", end='" + end + '\'' +
+//                ", prefixOrigin='" + prefixOrigin + '\'' +
+//                ", prefixEnd='" + prefixEnd + '\'' +
+//                ", dataOrigin='" + dataOrigin + '\'' +
+//                ", dataEnd='" + dataEnd + '\'' +
+//                ", cryptoConfig=" + cryptoConfig +
+//                ", softLifetime=" + softLifetime +
+//                ", hardLifetime=" + hardLifetime +
+//                ", timestamp=" + timestamp +
+//                ", reKeysDone=" + reKeysDone +
+//                "}\n";
+//    }
     @Override
     public String toString() {
-        return "IpsecConfig{" +
-                "confType=" + confType +
-                ", name='" + name + '\'' +
-                ", spi=" + spi +
-                ", reqId=" + reqId +
-                ", origin='" + origin + '\'' +
-                ", end='" + end + '\'' +
-                ", prefixOrigin='" + prefixOrigin + '\'' +
-                ", prefixEnd='" + prefixEnd + '\'' +
-                ", dataOrigin='" + dataOrigin + '\'' +
-                ", dataEnd='" + dataEnd + '\'' +
-                ", cryptoConfig=" + cryptoConfig +
-                ", softLifetime=" + softLifetime +
-                ", hardLifetime=" + hardLifetime +
-                ", timestamp=" + timestamp +
-                ", reKeysDone=" + reKeysDone +
-                "}\n";
+        StringBuilder sb = new StringBuilder();
+        sb.append("Configuration Type: ").append(confType).append("\n");
+        sb.append("Name: ").append(name).append("\n");
+        sb.append("SPI: ").append(spi).append("\n");
+        sb.append("Request ID: ").append(reqId).append("\n");
+        sb.append("Origin: ").append(origin).append("\n");
+        sb.append("End: ").append(end).append("\n");
+        sb.append("Prefix Origin: ").append(prefixOrigin != null ? prefixOrigin : "N/A").append("\n");
+        sb.append("Prefix End: ").append(prefixEnd != null ? prefixEnd : "N/A").append("\n");
+        sb.append("Data Origin: ").append(dataOrigin).append("\n");
+        sb.append("Data End: ").append(dataEnd).append("\n");
+        sb.append("Crypto Configuration: ").append(cryptoConfig).append("\n");
+        sb.append("Soft Lifetime: ").append(softLifetime).append("\n");
+        sb.append("Hard Lifetime: ").append(hardLifetime).append("\n");
+        sb.append("Timestamp: ").append(timestamp).append("\n");
+        sb.append("Rekeys Done: ").append(reKeysDone).append("\n");
+        return sb.toString();
     }
 
 

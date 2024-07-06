@@ -43,39 +43,59 @@ public class CryptoConfig {
     public Algs.EncAlgType getEncAlg() {
         return this.encAlg;
     }
+
     public Algs.AuthAlgType getIntAlg() {
         return intAlg;
     }
+
     public long getEncKeyLength() {
         return this.encKeyLength;
     }
+
     public long getAuthKeyLength() {
         return this.authKeyLength;
     }
+
     public byte[] getEncKey() {
         return this.encKey;
     }
+
     public byte[] getIntKey() {
         return this.intKey;
     }
+
     public byte[] getIv() {
         return this.iv;
     }
+
     public void setIv(byte[] iv) {
         this.iv = iv;
     }
 
+    //    @Override
+//    public String toString() {
+//        return "CryptoConfig{" +
+//                "encAlg=" + encAlg +
+//                ", intAlg=" + intAlg +
+//                ", encKeyLength=" + encKeyLength +
+//                ", authKeyLength=" + authKeyLength +
+//                ", encKey=" + Arrays.toString(encKey) +
+//                ", intKey=" + Arrays.toString(intKey) +
+//                ", iv=" + Arrays.toString(iv) +
+//                ", secureRandom=" + secureRandom +
+//                '}';
+//    }
+
     @Override
     public String toString() {
-        return "CryptoConfig{" +
-                "encAlg=" + encAlg +
-                ", intAlg=" + intAlg +
-                ", encKeyLength=" + encKeyLength +
-                ", authKeyLength=" + authKeyLength +
-                ", encKey=" + Arrays.toString(encKey) +
-                ", intKey=" + Arrays.toString(intKey) +
-                ", iv=" + Arrays.toString(iv) +
-                ", secureRandom=" + secureRandom +
-                '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append("Encryption Algorithm: ").append(encAlg).append("\n");
+        sb.append("Integrity Algorithm: ").append(intAlg).append("\n");
+        sb.append("Encryption Key Length: ").append(encKeyLength).append("\n");
+        sb.append("Authentication Key Length: ").append(authKeyLength).append("\n");
+        sb.append("Encryption Key: ").append(Arrays.toString(encKey)).append("\n");
+        sb.append("Integrity Key: ").append(Arrays.toString(intKey)).append("\n");
+        sb.append("Initialization Vector (IV): ").append(Arrays.toString(iv)).append("\n");
+        return sb.toString();
     }
 }

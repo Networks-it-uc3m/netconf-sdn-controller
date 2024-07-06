@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.ErrorManager;
@@ -180,9 +181,10 @@ public class Handler {
         return true;
     }
 
-    public boolean processRekey(NetconfController controller,MastershipService mastershipService, String name, long oldSPI) throws Exception {
+    public boolean processRekey(NetconfController controller, String name, long oldSPI) throws Exception {
 
-        this.locker.writeLock().lock();
+
+//        this.locker.writeLock().lock();
 
 
 
@@ -215,7 +217,7 @@ public class Handler {
 
         System.out.print("Received notification to proceed with rekey of " + name + oldSPI);
 
-        if (!this.ids.get(name).getCfg().getReKeysDone().getOrDefault(oldSPI, false)) {//CUIDAOOOOOOO ESTE CAMBIO DE !
+        if (this.ids.get(name).getCfg().getReKeysDone().getOrDefault(oldSPI, false)) {//CUIDAOOOOOOO ESTE CAMBIO DE !
             System.out.print("Rekey of spi:" + oldSPI + " has been already completed\n");
             return true;
         } else if (this.ids.get(name).getCfg().getSpi() != oldSPI) {
@@ -237,14 +239,7 @@ public class Handler {
         String s2Data = generateI2NSFConfig(new String[]{sadConfig[1], null}, new String[]{null, null});
 
         String mode = "merge";
-//        while (!mastershipservice.isLocalMaster(new_device_1)){
-//            mastershipservice.requestRoleForSync(new_device_1);
-//        }
-//        try {
-//            this.ids.get(name).getS1().checkAndReestablish();
-//        } catch (NetconfException e) {
-//            log.error("Failed to check and reestablish session 1");
-//        }
+
 
 
         newDeviceSession_1.getConfig(DatastoreId.datastore("running"));
@@ -254,45 +249,20 @@ public class Handler {
             log.error("Failed editconfig s1Data");
         }
 
-//        while (!mastershipservice.isLocalMaster(new_device_2)){
-//            mastershipservice.requestRoleForSync(new_device_2);
-//        }
-//        try {
-//            this.ids.get(name).getS2().checkAndReestablish();
-//        } catch (NetconfException e){
-//            log.error("Failed to check and reestablish session 2");
-//        }
         try {
             this.ids.get(name).getS2().editConfig(DatastoreId.datastore("running"), mode, s2Data);
         } catch (NetconfException e) {
             log.error("Failed editconfig s2Data");
         }
-//
-//        newDeviceSession_1.checkAndReestablish();
-//        newDeviceSession_2.checkAndReestablish();
-//
+
         System.out.print("Deleting old entries out " + this.ids.get(name).getCfg().getOrigin() + " in " + this.ids.get(name).getCfg().getEnd() + " SPI " + oldSPI);
-//        while (!mastershipservice.isLocalMaster(new_device_1)){
-//            mastershipservice.requestRoleForSync(new_device_1);
-//        }
-//        try {
-//            this.ids.get(name).getS1().checkAndReestablish();
-//        } catch (NetconfException e) {
-//            log.error("Failed to check and reestablish session 1");
-//        }
+
         try {
             this.ids.get(name).getS1().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
         } catch (NetconfException e) {
             log.error("Failed editconfig delSAD");
         }
-//        while (!mastershipservice.isLocalMaster(new_device_2)){
-//            mastershipservice.requestRoleForSync(new_device_2);
-//        }
-//        try {
-//            this.ids.get(name).getS2().checkAndReestablish();
-//        } catch (NetconfException e) {
-//            log.error("Failed to check and reestablish session 2");
-//        }
+
         try {
             this.ids.get(name).getS2().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
         } catch (NetconfException e) {
@@ -301,7 +271,7 @@ public class Handler {
 
         System.out.print("Rekey process of " + this.ids.get(name).getCfg().getReqId() + " already completed");
 
-        this.locker.writeLock().unlock();
+//        this.locker.writeLock().unlock();
 
         return true;
     }
@@ -310,17 +280,17 @@ public class Handler {
 
 
     public boolean keyExists(String key) {
-        this.locker.readLock().lock();
+//        this.locker.readLock().lock();
         try {
             return ids.containsKey(key);
         } finally {
-            this.locker.readLock().unlock();
+//            this.locker.readLock().unlock();
         }
     }
 
 
     public boolean stop() {
-        this.locker.writeLock().lock();
+//        this.locker.writeLock().lock();
         try {
             ErrorManager log;
             for (OutIn outIn : ids.values()) {
@@ -356,7 +326,12 @@ public class Handler {
                 } catch (Exception e) {
                     System.out.print("Error");
                 }
+
             }
+            for (String key : new HashSet<>(ids.keySet())) {
+                ids.put(key + "_stopped", ids.remove(key));
+            }
+
 
             isStopped = true;
 //            for (NetconfSession s : sessions) {
@@ -370,29 +345,39 @@ public class Handler {
 
             return true;
         } finally {
-            this.locker.writeLock().unlock();
+//            this.locker.writeLock().unlock();
         }
     }
 
     // Placeholder for the editConfig method
 
 
-
-
-
     public boolean isStopped() {
         return this.isStopped;
     }
+
     public void setStopped(boolean stopped) {
         this.isStopped = stopped;
     }
 
+    //    @Override
+//    public String toString() {
+//        return "Handler{" +
+//                "isStopped=" + isStopped +
+//                ", ids=" + ids +
+//                "}\n";
+//    }
     @Override
     public String toString() {
-        return "Handler{" +
-                "isStopped=" + isStopped +
-                ", ids=" + ids +
-                "}\n";
+        StringBuilder sb = new StringBuilder();
+        sb.append("========== Handler Details ================================================================\n");
+        sb.append("Status: ").append(isStopped ? "Stopped" : "Running").append("\n");
+        sb.append("Configuration IDs:\n");
+        ids.forEach((key, value) -> {
+            sb.append(value).append("\n");
+        });
+        sb.append("===========================================================================================\n");
+        return sb.toString();
     }
 }
 

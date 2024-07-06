@@ -9,12 +9,12 @@ public class OutIn {
     private String s1_string;
     private String s2_string;
 
-    public OutIn(IpsecConfig cfg, NetconfSession s1, NetconfSession s2,String s1_string,String s2_string) {
+    public OutIn(IpsecConfig cfg, NetconfSession s1, NetconfSession s2, String s1_string, String s2_string) {
         this.cfg = cfg;
         this.s1 = s1;
         this.s2 = s2;
-        this.s1_string=s1_string;
-        this.s2_string=s2_string;
+        this.s1_string = s1_string;
+        this.s2_string = s2_string;
     }
 
     public IpsecConfig getCfg() {
@@ -41,11 +41,22 @@ public class OutIn {
         this.s2 = s2;
     }
 
+    //    @Override
+//    public String toString() {
+//        return "\nOutIn{" +
+//                "cfg=" + cfg +
+//                "}";
+//    }
     @Override
     public String toString() {
-        return "\nOutIn{" +
-                "cfg=" + cfg +
-                "}";
+        StringBuilder sb = new StringBuilder();
+        sb.append("----- OutIn Details -----------------------------------------------------------------------\n");
+        //sb.append("IPsec Configuration: ").append(cfg).append("\n"); TO DEBUG BETTER IS->//
+        sb.append("IPsec Configuration").append("\n");//TESTING
+        sb.append("Session 1 String: ").append(s1_string).append("\n");
+        sb.append("Session 2 String: ").append(s2_string).append("\n");
+        sb.append("-------------------------------------------------------------------------------------------\n");
+        return sb.toString();
     }
 
     public String getS1_string() {

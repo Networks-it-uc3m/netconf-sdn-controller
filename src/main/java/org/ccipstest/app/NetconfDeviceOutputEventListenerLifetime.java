@@ -20,28 +20,41 @@ import javax.xml.transform.stream.StreamResult;
 
 import java.io.StringReader;
 import java.util.Objects;
+import java.util.concurrent.Semaphore;
 
 public class NetconfDeviceOutputEventListenerLifetime implements NetconfDeviceOutputEventListener {
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(NetconfDeviceOutputEventListenerLifetime.class);
+    private static final Semaphore semaphore = new Semaphore(1); // Permite un acceso a la vez
 
     @Override
     public void event(NetconfDeviceOutputEvent event) {
+        new Thread(() -> {
+            try {
+                semaphore.acquire();
+                processEvent(event);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Thread was interrupted", e);
+            } finally {
+                semaphore.release();
+            }
+        }).start();
+    }
+
+    private void processEvent(NetconfDeviceOutputEvent event) {
         try {
-            log.info("DEBUG NOTIFICATION");
             String netconfMessage = event.getMessagePayload();
 
-
-            if (netconfMessage.contains("true</sadb-expire></notification>")) {
-                log.info(netconfMessage);
+            if (netconfMessage.contains("<soft-lifetime-expire>true</soft-lifetime-expire>")) {
+                log.info("Notification received :\n {}",XmlFormatter.formatXml(netconfMessage));
                 String ipsecSaName = extractIpsecSaName(netconfMessage);
 
                 if (ipsecSaName != null) {
-                    log.info("IPsec SA Name: " + ipsecSaName);
-                    //StorageHandler.rekey(ipsecSaName); IMPORTANT!!!
+                    log.info("Soft lifetime expired for IPsec SA Name: {}", ipsecSaName);
+                    StorageHandler.rekey(ipsecSaName);
                 }
             }
-
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Error processing NETCONF event", e);
         }
     }

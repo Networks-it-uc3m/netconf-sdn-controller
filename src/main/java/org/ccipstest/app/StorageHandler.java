@@ -1,8 +1,11 @@
 package org.ccipstest.app;
 
+import org.ccipstest.rest.RequestDeleteDTO;
 import org.onosproject.mastership.MastershipService;
 import org.onosproject.netconf.NetconfController;
 import org.onosproject.netconf.NetconfSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,11 +14,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class StorageHandler {
     public static Map<Long, Handler> storage = new HashMap<>();
-    private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final Logger log = LoggerFactory.getLogger(StorageHandler.class);
+    private static final Object lock = new Object();
     private static final Random random = new Random();
     static long key=0;
     public static NetconfController controller;
-    public static MastershipService mastershipService;
 
 
     public static long generateUniqueRandomKey() {
@@ -28,27 +31,29 @@ public class StorageHandler {
 
     // Create a new Handler and store it
     public static void createHandler(request request, NetconfSession newDeviceSession_1, NetconfSession newDeviceSession_2) throws Exception {
-        long req_id = generateUniqueRandomKey();
+        synchronized (lock) {
+            long req_id = generateUniqueRandomKey();
 
-        Handler h = Handler.newHandler(request,req_id,newDeviceSession_1,newDeviceSession_2);
-        System.out.println("Handler created");
-        if (h == null) {
-            throw new Exception("Error creating handler");
-        }
+            Handler h = Handler.newHandler(request, req_id, newDeviceSession_1, newDeviceSession_2);
+            System.out.println("Handler created");
+            if (h == null) {
+                throw new Exception("Error creating handler");
+            }
 
-        // This will mean that most probably the handler has established the session with the Netconf server
-        if (!h.setInitialConfigValues(newDeviceSession_1,newDeviceSession_2)) {
-            throw new Exception("Error setting initial config values");
-        }
-        System.out.println("Initial values have been established");
-        System.out.printf("Handler assigned to id %s%n", req_id);
+            // This will mean that most probably the handler has established the session with the Netconf server
+            if (!h.setInitialConfigValues(newDeviceSession_1, newDeviceSession_2)) {
+                throw new Exception("Error setting initial config values");
+            }
+            System.out.println("Initial values have been established");
+            System.out.printf("Handler assigned to id %s%n", req_id);
 
-        lock.writeLock().lock();
-        try {
-            storage.put(req_id, h);
-            System.out.printf("Handler %s stored%n", req_id);
-        } finally {
-            lock.writeLock().unlock();
+            //lock.writeLock().lock();
+            try {
+                storage.put(req_id, h);
+                System.out.printf("Handler %s stored%n", req_id);
+            } finally {
+                //lock.writeLock().unlock();
+            }
         }
 
 
@@ -56,43 +61,84 @@ public class StorageHandler {
 
     // Delete a Handler by its UUID
     public static void deleteHandler(long id) throws Exception {
-        lock.writeLock().lock();
-        try {
-            Handler handler = storage.get(id);
-            if (handler == null) {
-                throw new Exception(String.format("Handler with id %s, does not exist", id));
+        synchronized (lock) {
+            try {
+                Handler handler = storage.get(id);
+                if (handler == null) {
+                    throw new Exception(String.format("Handler with id %s, does not exist", id));
+                }
+
+                if (!handler.stop()) {
+                    throw new Exception("Error stopping handler");
+                } else {
+                    storage.remove(id);
+                }
+            } finally {
+                //lock.writeLock().unlock();
+            }
+        }
+    }
+
+    public static void stopTunnel(RequestDeleteDTO request_del) throws Exception {
+        synchronized (lock) {
+
+            Handler handler;
+            if (request_del.getReqId() != null) {
+
+                handler = storage.get(Long.parseLong(request_del.getReqId()));//IMPORTANTTTTTTTTTTTTTTTTTT
+                if (handler == null) {
+                    throw new Exception(String.format("Handler with id %s does not exist", request_del.getReqId()));
+                }
+            } else if (request_del.getName() != null) {
+                Long reqId = findHandlerKeyContaining(request_del.getName());
+                if (reqId == null) {
+                    reqId = findHandlerKeyContaining(request_del.getName()+"_stopped");
+                    if (reqId == null) {
+                        throw new Exception(String.format("Handler with name %s does not exist", request_del.getName()));
+                    }
+                }
+                handler = storage.get(reqId);
+            } else {
+                throw new Exception("RequestDeleteDTO must contain either reqId or name");
+            }
+
+            if (handler.isStopped()) {
+                log.info("Handler {} is already stopped", request_del.getReqId() != null ? request_del.getReqId() : request_del.getName());
+                return;
             }
 
             if (!handler.stop()) {
                 throw new Exception("Error stopping handler");
             } else {
-                storage.remove(id);
+                storage.remove(request_del.getReqId() != null ? request_del.getReqId() : findHandlerKeyContaining(request_del.getName()));
+
+                //log.info("Handler {} removed after stopping", request_del.getReqId() != null ? request_del.getReqId() : request_del.getName());
             }
-        } finally {
-            lock.writeLock().unlock();
+
         }
     }
 
     public static void rekey(String name_spi) throws Exception {
-        lock.writeLock().lock();
-        try {
-            String[] s = name_spi.split("_");
-            if (s.length < 2) {
-                throw new Exception("The id of the SAD notification is incorrect");
-            }
-            String name=s[0];
-            long spi = Long.parseLong(s[1]);
-            Long reqId= findHandlerKeyContaining(name);
-            if (reqId==null) {
-                throw new Exception(String.format("Handler with id %s, does not exist", name));
-            }
-            if (!storage.get(reqId).processRekey(controller,mastershipService,name ,spi)) {
-                throw new Exception("Error rekeying handler");
-            }
+        synchronized (lock) {
+            try {
+                String[] s = name_spi.split("_");
+                if (s.length < 2) {
+                    throw new Exception("The id of the SAD notification is incorrect");
+                }
+                String name = s[0];
+                long spi = Long.parseLong(s[1]);
+                Long reqId = findHandlerKeyContaining(name);
+                if (reqId == null) {
+                    throw new Exception(String.format("Handler with id %s, does not exist", name));
+                }
+                if (!storage.get(reqId).processRekey(controller, name, spi)) {
+                    throw new Exception("Error rekeying handler");
+                }
 
 
-        } finally {
-            lock.writeLock().unlock();
+            } finally {
+                //lock.writeLock().unlock();
+            }
         }
     }
 
@@ -100,17 +146,14 @@ public class StorageHandler {
 
 
     public static Long findHandlerKeyContaining(String key) {
-        lock.readLock().lock();
-        try {
-            for (Map.Entry<Long, Handler> entry : storage.entrySet()) {
-                if (entry.getValue().keyExists(key)) {
-                    return entry.getKey();
-                }
+
+        for (Map.Entry<Long, Handler> entry : storage.entrySet()) {
+            if (entry.getValue().keyExists(key)) {
+                return entry.getKey();
             }
-            return null;
-        } finally {
-            lock.readLock().unlock();
         }
+        return null;
+
     }
 }
 
