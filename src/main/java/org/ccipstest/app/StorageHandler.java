@@ -1,6 +1,6 @@
 package org.ccipstest.app;
 
-import org.ccipstest.rest.RequestDeleteDTO;
+
 import org.onosproject.mastership.MastershipService;
 import org.onosproject.netconf.NetconfController;
 import org.onosproject.netconf.NetconfSession;
@@ -25,7 +25,7 @@ public class StorageHandler {
 
         do {
             key++;
-        } while (storage.containsKey(key)||key<0||key>100);
+        } while (storage.containsKey(key)||key<0||key>300);
         return key;
     }
 
@@ -79,38 +79,38 @@ public class StorageHandler {
         }
     }
 
-    public static void stopTunnel(RequestDeleteDTO request_del) throws Exception {
+    public static void stopTunnel(String name, String reqId) throws Exception {
         synchronized (lock) {
 
             Handler handler;
-            if (request_del.getReqId() != null) {
+            if (reqId != null) {
 
-                handler = storage.get(Long.parseLong(request_del.getReqId()));//IMPORTANTTTTTTTTTTTTTTTTTT
+                handler = storage.get(Long.parseLong(reqId));//IMPORTANTTTTTTTTTTTTTTTTTT
                 if (handler == null) {
-                    throw new Exception(String.format("Handler with id %s does not exist", request_del.getReqId()));
+                    throw new Exception(String.format("Handler with id %s does not exist", reqId));
                 }
-            } else if (request_del.getName() != null) {
-                Long reqId = findHandlerKeyContaining(request_del.getName());
-                if (reqId == null) {
-                    reqId = findHandlerKeyContaining(request_del.getName()+"_stopped");
-                    if (reqId == null) {
-                        throw new Exception(String.format("Handler with name %s does not exist", request_del.getName()));
+            } else if (name != null) {
+                Long reqId_aux = findHandlerKeyContaining(name);
+                if (reqId_aux == null) {
+                    reqId_aux = findHandlerKeyContaining(name+"_stopped");
+                    if (reqId_aux == null) {
+                        throw new Exception(String.format("Handler with name %s does not exist", name));
                     }
                 }
-                handler = storage.get(reqId);
+                handler = storage.get(reqId_aux);
             } else {
                 throw new Exception("RequestDeleteDTO must contain either reqId or name");
             }
 
             if (handler.isStopped()) {
-                log.info("Handler {} is already stopped", request_del.getReqId() != null ? request_del.getReqId() : request_del.getName());
+                log.info("Handler {} is already stopped", reqId != null ? reqId : name);
                 return;
             }
 
             if (!handler.stop()) {
                 throw new Exception("Error stopping handler");
             } else {
-                storage.remove(request_del.getReqId() != null ? request_del.getReqId() : findHandlerKeyContaining(request_del.getName()));
+                storage.remove(name != null ? reqId : findHandlerKeyContaining(name));
 
                 //log.info("Handler {} removed after stopping", request_del.getReqId() != null ? request_del.getReqId() : request_del.getName());
             }

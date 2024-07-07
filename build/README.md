@@ -115,10 +115,11 @@ curl --location 'http://localhost:8181/onos/ccipstest-app/sample/edit-netconf' \
 }' --user onos:rocks
 ```
 
-### Manual Rekey
+### Delete Ipsec SA
 ```bash
-curl -X POST 'http://localhost:8181/onos/ccipstest-app/sample/reek1' --user onos:rocks
-curl -X POST 'http://localhost:8181/onos/ccipstest-app/sample/reek2' --user onos:rocks
+curl --location 'http://localhost:8181/onos/ccipstest-app/sample/del' -H "Content-Type: application/json" -d '{"reqId":"1"}' --user onos:rocks
+curl --location 'http://localhost:8181/onos/ccipstest-app/sample/del' -H "Content-Type: application/json" -d '{"name":"out/172.20.0.2/in/172.20.0.3"}' --user onos:rocks
+
 ```
 
 # Tunnel Test

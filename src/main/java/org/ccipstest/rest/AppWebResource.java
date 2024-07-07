@@ -68,8 +68,7 @@ public class AppWebResource extends AbstractWebResource {
     @Path("storage")
     public Response Storage() throws Exception {
         log.info("ESTO ES LO QUE HAY DENTRO DEL HASH MAP DE HANDLERS:\n"+StorageHandler.storage);
-        StorageHandler.stopTunnel(new RequestDeleteDTO(null,"out/172.20.0.3/in/172.20.0.2"));
-        log.info("ESTO ES LO QUE HAY DENTRO DEL HASH MAP DE HANDLERS:\n"+StorageHandler.storage);
+
         return Response.ok().build();
 
     }
@@ -84,18 +83,13 @@ public class AppWebResource extends AbstractWebResource {
     }
 
     @POST
-    @Path("delete")
+    @Path("del")
     @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
-    public Response delete(RequestDeleteDTO request_del) throws Exception {
-        try {
-            StorageHandler.stopTunnel(request_del);
-            return Response.ok().build();
-        } catch (Exception e) {
-            log.info("Exception while stopping tunnel: ", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error stopping tunnel: " + e.getMessage())
-                    .build();
-        }
+    public Response del(RequestDeleteDTO request_del) throws Exception {
+
+        StorageHandler.stopTunnel(request_del.getName(), request_del.getReqId());
+        return Response.ok().build();
+
     }
 
     @POST
@@ -113,6 +107,28 @@ public class AppWebResource extends AbstractWebResource {
         return Response.ok().build();
 
 
+    }
+
+    public static class RequestDeleteDTO {
+        String reqId;
+        String name;
+
+
+        public String getReqId() {
+            return this.reqId;
+        }
+
+        public void setReqId(String reqId) {
+            this.reqId = reqId;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 
     public static class RequestDTO {
