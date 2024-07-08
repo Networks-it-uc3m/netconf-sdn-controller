@@ -83,11 +83,20 @@ public class AppWebResource extends AbstractWebResource {
     }
 
     @POST
+    @Path("stop")
+    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
+    public Response stop(RequestDeleteDTO request_del) throws Exception {
+
+        StorageHandler.stopTunnel(request_del.getName(), request_del.getReqId());
+        return Response.ok().build();
+
+    }
+
+    @POST
     @Path("del")
     @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
     public Response del(RequestDeleteDTO request_del) throws Exception {
-
-        StorageHandler.stopTunnel(request_del.getName(), request_del.getReqId());
+        StorageHandler.deleteHandler(Long.parseLong(request_del.getReqId()));
         return Response.ok().build();
 
     }

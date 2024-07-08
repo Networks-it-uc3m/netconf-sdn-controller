@@ -1,0 +1,94 @@
+
+version: '3'
+
+services:
+
+  agentspirs1:
+    image: agentespirs
+    container_name: agentspirs1
+    cap_add:
+      - ALL
+    networks:
+      - network1
+      - custom_bridge
+    stdin_open: true
+    tty: true
+
+  agentspirs2:
+    image: agentespirs
+    container_name: agentspirs2
+    cap_add:
+      - ALL
+    networks:
+      - network2
+      - custom_bridge
+    stdin_open: true
+    tty: true
+
+  agentspirs3:
+    image: agentespirs
+    container_name: agentspirs3
+    cap_add:
+      - ALL
+    networks:
+      - network3
+      - custom_bridge
+    stdin_open: true
+    tty: true
+
+  agentspirs4:
+    image: agentespirs
+    container_name: agentspirs4
+    cap_add:
+      - ALL
+    networks:
+      - network4
+      - custom_bridge
+    stdin_open: true
+    tty: true
+
+  agentspirs5:
+    image: agentespirs
+    container_name: agentspirs5
+    cap_add:
+      - ALL
+    networks:
+      - network5
+      - custom_bridge
+    stdin_open: true
+    tty: true
+
+networks:
+
+  network1:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.100.0.0/24
+
+  network2:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.100.1.0/24
+
+  network3:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.100.2.0/24
+
+  network4:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.100.3.0/24
+
+  network5:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.100.4.0/24
+
+  custom_bridge:
+    external: true

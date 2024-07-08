@@ -51,13 +51,13 @@ public class Algs {
     }
 
     public static final Map<String, EncAlgType> ENCALGS = new HashMap<String, EncAlgType>() {{
-        put("des-cbc", EncAlgType.DESCBC);
-        put("3-des-cbc", EncAlgType.TRIPLEDESCBC);
-        put("cast-cbc", EncAlgType.CASTCBC);
-        put("blowfish-cbc", EncAlgType.BLOWFISHCBC);
-        put("aes-cbc", EncAlgType.AESCBC);
-        put("aes-ctr", EncAlgType.AESCTR);
-        put("aes-ccmv-8", EncAlgType.AESCCMV8);
+        put("des-cbc", EncAlgType.DESCBC);//YES
+        put("3-des-cbc", EncAlgType.TRIPLEDESCBC);//YES
+        put("cast-cbc", EncAlgType.CASTCBC);//YES
+        put("blowfish-cbc", EncAlgType.BLOWFISHCBC);//NO
+        put("aes-cbc", EncAlgType.AESCBC);//YES
+        put("aes-ctr", EncAlgType.AESCTR);//NO
+        put("aes-ccmv-8", EncAlgType.AESCCMV8);//NO
         put("aes-ccmv-12", EncAlgType.AESCCMV12);
         put("aes-ccmv-16", EncAlgType.AESCCMV16);
         put("aes-gcmv-8", EncAlgType.AESGCMV8);
@@ -71,13 +71,13 @@ public class Algs {
         put(EncAlgType.CASTCBC, 16L);
         put(EncAlgType.BLOWFISHCBC, 24L);
         put(EncAlgType.AESCBC, 32L);
-        put(EncAlgType.AESCTR, 64L);
-        put(EncAlgType.AESCCMV8, 32L);
-        put(EncAlgType.AESCCMV12, 48L);
-        put(EncAlgType.AESCCMV16, 64L);
-        put(EncAlgType.AESGCMV8, 32L);
-        put(EncAlgType.AESGCMV12, 48L);
-        put(EncAlgType.AESGCMV16, 64L);
+        put(EncAlgType.AESCTR, 64L);//32??
+        put(EncAlgType.AESCCMV8, 32L);//32??
+        put(EncAlgType.AESCCMV12, 48L);//32??
+        put(EncAlgType.AESCCMV16, 64L);//32??
+        put(EncAlgType.AESGCMV8, 32L);//32??
+        put(EncAlgType.AESGCMV12, 48L);//32??
+        put(EncAlgType.AESGCMV16, 64L);//32??
     }};
 
     public static final Map<AuthAlgType, Long> AUTHKEYLENGTH = new HashMap<AuthAlgType, Long>() {{

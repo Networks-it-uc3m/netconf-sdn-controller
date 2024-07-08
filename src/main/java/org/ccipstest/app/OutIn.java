@@ -51,8 +51,8 @@ public class OutIn {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("----- OutIn Details -----------------------------------------------------------------------\n");
-        //sb.append("IPsec Configuration: ").append(cfg).append("\n"); TO DEBUG BETTER IS->//
-        sb.append("IPsec Configuration").append("\n");//TESTING
+        sb.append("IPsec Configuration: ").append(cfg).append("\n");
+        //sb.append("IPsec Configuration").append("\n");//TESTING
         sb.append("Session 1 String: ").append(s1_string).append("\n");
         sb.append("Session 2 String: ").append(s2_string).append("\n");
         sb.append("-------------------------------------------------------------------------------------------\n");

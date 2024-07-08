@@ -68,7 +68,7 @@ public class StorageHandler {
                     throw new Exception(String.format("Handler with id %s, does not exist", id));
                 }
 
-                if (!handler.stop()) {
+                if (!handler.stop2()) {
                     throw new Exception("Error stopping handler");
                 } else {
                     storage.remove(id);

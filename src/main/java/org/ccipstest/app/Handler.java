@@ -28,12 +28,12 @@ public class Handler {
     private IpsecConfig[] configs =new IpsecConfig[2];
 
     private Map<String, OutIn> ids = new HashMap<>();
-    private ReentrantReadWriteLock locker = null;
+
     private boolean isStopped=false;
 
 
     public Handler (NetconfSession newDeviceSession_1, NetconfSession newDeviceSession_2, IpsecConfig cfg1, IpsecConfig cfg2){
-        this.locker = new ReentrantReadWriteLock();;
+
 
         this.ids.put(cfg1.getName(), new OutIn(cfg1, newDeviceSession_1, newDeviceSession_2 ,cfg1.getOrigin(),cfg1.getEnd()));
         this.ids.put(cfg2.getName(), new OutIn(cfg2, newDeviceSession_2, newDeviceSession_1,cfg2.getOrigin(),cfg2.getEnd()));
@@ -42,11 +42,9 @@ public class Handler {
     }
 
     public static Handler newHandler(request request, long id, NetconfSession newDeviceSession_1, NetconfSession newDeviceSession_2) throws Exception {
-//        String node1 = request.getNode1().getIpControl();
-//        String node2 = request.getNode2().getIpControl();
+
         IpsecConfig.IPsecConfigType mode;
 
-        // Check mode:
         if (request.getNode1().getNetworkInternal()==null) {
             mode = IpsecConfig.IPsecConfigType.H2H;
             log.info("New Handler for H2H mode");
@@ -184,8 +182,6 @@ public class Handler {
     public boolean processRekey(NetconfController controller, String name, long oldSPI) throws Exception {
 
 
-//        this.locker.writeLock().lock();
-
 
 
         String uri_device_1 = "netconf:" + this.ids.get(name).getS1_string() + ":830";
@@ -194,17 +190,11 @@ public class Handler {
         DeviceId new_device_2 = DeviceId.deviceId(uri_device_2);
 
 
-
-
-//        NetconfSession newDeviceSession_1 = controller.getNetconfDevice(new_device_1).getSession();
-//        NetconfSession newDeviceSession_2 = controller.getNetconfDevice(new_device_2).getSession();
         NetconfSession newDeviceSession_1 = controller.getNetconfDevice(new_device_1).getSession();
         NetconfSession newDeviceSession_2 = controller.getNetconfDevice(new_device_2).getSession();
 
 
 
-//        controller.pingDevice(new_device_1);
-//        controller.pingDevice(new_device_2);
         this.ids.get(name).setS1(newDeviceSession_1);
         this.ids.get(name).setS2(newDeviceSession_2);
 
@@ -212,8 +202,6 @@ public class Handler {
             return false;
         }
 
-//        mastershipService.getMasterFor(new_device_1);
-//        mastershipService.getMasterFor(new_device_2);
 
         System.out.print("Received notification to proceed with rekey of " + name + oldSPI);
 
@@ -290,7 +278,7 @@ public class Handler {
 
 
     public boolean stop() {
-//        this.locker.writeLock().lock();
+
         try {
             ErrorManager log;
             for (OutIn outIn : ids.values()) {
@@ -330,6 +318,63 @@ public class Handler {
             }
             for (String key : new HashSet<>(ids.keySet())) {
                 ids.put(key + "_stopped", ids.remove(key));
+            }
+
+
+            isStopped = true;
+//            for (NetconfSession s : sessions) {
+//                //
+//                try {
+//                    s.close();
+//                } catch (Exception e) {
+//                    log.error(e.getMessage());
+//                }
+//            }
+
+            return true;
+        } finally {
+//            this.locker.writeLock().unlock();
+        }
+    }
+
+    public boolean stop2() {
+
+        try {
+            ErrorManager log;
+            for (OutIn outIn : ids.values()) {
+                // Generate del SADs
+                String delSADXml = outIn.getCfg().createDelSAD();
+
+                // Generate del SPDs
+                String delSPDXml = outIn.getCfg().createDelSPD();
+                String mode="merge";
+
+                // Delete SADs
+                // First delete the outbound configs
+                // Then delete the inbound configs
+                try {
+                    outIn.getS1().editConfig(DatastoreId.datastore("running"),mode,delSADXml);
+                } catch (Exception e) {
+                    System.out.print("Error");
+                }
+                try {
+                    outIn.getS2().editConfig(DatastoreId.datastore("running"),mode,delSADXml);
+                } catch (Exception e) {
+                    System.out.print("Error");
+                }
+
+                // Delete SPDs
+                try {
+                    outIn.getS1().editConfig(DatastoreId.datastore("running"),mode,delSPDXml);
+                } catch (Exception e) {
+                    System.out.print("Error");
+                }
+                try {
+                    outIn.getS2().editConfig(DatastoreId.datastore("running"),mode,delSPDXml);
+                } catch (Exception e) {
+                    System.out.print("Error");
+                }
+
             }
 
 

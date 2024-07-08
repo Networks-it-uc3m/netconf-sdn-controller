@@ -8,7 +8,7 @@ docker build -t onos_ccips:2.7.0 .
 
 ### Run the Onos container
 ```bash
-sudo docker run --network=custom_bridge -p 8181:8181 -p 6640:6640 -p 8101:8101 -p 6633:6633 -p 6653:6653 -p 9876:9876 onos_ccips:2.7.0
+sudo docker run --rm --init --network=custom_bridge -p 8181:8181 -p 6640:6640 -p 8101:8101 -p 6633:6633 -p 6653:6653 -p 9876:9876 onos_ccips:2.7.0
 ```
 
 # New Netopeer2
@@ -39,8 +39,7 @@ docker network create custom_bridge
 
 ### Build agent images
 ```bash
-docker build -t agentspirs1:1.0.0 .
-docker build -t agentspirs2:1.0.0 .
+docker build -t agentspirs:1.0.0 .
 ```
 
 ### Bring up the agents with Docker Compose

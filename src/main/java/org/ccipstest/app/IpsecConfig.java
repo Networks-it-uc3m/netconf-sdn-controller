@@ -220,9 +220,11 @@ public class IpsecConfig {
         return TemplateManager.formatDelSAD(this,oldSPI);
     }
 
+
     public String createDelSPD() {
         return TemplateManager.formatDelSPD(this);
     }
+
 
     public String[] createSADConfig() {
         String outCfg;

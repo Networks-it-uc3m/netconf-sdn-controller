@@ -6,7 +6,7 @@ RUN apt-get update && \
 # Copy the scripts into the container
 COPY ./setup_controller.sh ./setup_controller.sh
 COPY ./onos_critique.sh ./onos_critique.sh    
-COPY ./ccipstest-app-1.0.0.oar ./ccipstest-app-1.0.0.oar
+#COPY ./ccipstest-app-1.0.0.oar ./ccipstest-app-1.0.0.oar
 RUN ls -l /
 
 

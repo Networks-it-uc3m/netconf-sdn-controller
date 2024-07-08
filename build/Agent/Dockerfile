@@ -3,7 +3,7 @@ FROM juancarlosvillenmolina/netopeer2:1.0.0
 ARG ENARX_RA=OFF
 ENV DEBUG_LVL_CCIPS=3
 ENV DEBUG_LVL_NETOPEER=0
-RUN apt update && apt install -y libpthread-stubs0-dev
+RUN apt update && apt install -y libpthread-stubs0-dev tcpdump iproute2 iputils-ping
 
 ADD . /cfgipsec2
 WORKDIR /cfgipsec2
@@ -26,3 +26,5 @@ ADD supervisord.conf /etc/supervisord.conf
 RUN echo '<nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm"><enable-nacm>false</enable-nacm></nacm>' > /disable-acm.xml
 RUN sysrepocfg --import=/disable-acm.xml -f xml --datastore startup --module ietf-netconf-acm -v3 && \
 sysrepocfg --import=/disable-acm.xml -f xml --datastore running --module ietf-netconf-acm -v3 
+
+

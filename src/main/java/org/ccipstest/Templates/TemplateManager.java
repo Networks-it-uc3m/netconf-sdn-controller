@@ -111,13 +111,13 @@ public class TemplateManager {
                         "                <mode>tunnel</mode>" +
                         "                <esp-sa>" +
                         "                    <encryption>" +
-                        "                        <encryption-algorithm>3</encryption-algorithm>" +
-                        "                        <key>01:23:45:67:89:AB:CE:DF:01:23:45:67:89:AB:CE:DF</key>" +
-                        "                       <iv>01:23:45:67:89:AB:CE:DF:01:23:45:67:89:AB:CE:DF</iv>" +
+                        "                        <encryption-algorithm>"+config.getCryptoConfig().getEncAlg().getValue()+"</encryption-algorithm>" +
+                        "                        <key>"+byteArrayToHexString(config.getCryptoConfig().getEncKey())+"</key>" +
+                        "                       <iv>"+byteArrayToHexString(config.getCryptoConfig().getIv()) + "</iv>" +
                         "                    </encryption>" +
                         "                    <integrity>" +
-                        "                        <integrity-algorithm>2</integrity-algorithm>" +
-                        "                        <key>01:23:45:67:89:AB:CE:DF:01:23:45:67:89:AB:CE:DF</key>" +
+                        "                        <integrity-algorithm>"+config.getCryptoConfig().getIntAlg().getValue()+"</integrity-algorithm>"+
+                        "                        <key>"+ byteArrayToHexString(config.getCryptoConfig().getIntKey()) +"</key>" +
                         "                    </integrity>" +
                         "                </esp-sa>" +
                         "                <sa-lifetime-hard>" +
@@ -170,11 +170,11 @@ public class TemplateManager {
                 "                <mode>tunnel</mode>" +
                 "                <protocol-parameters>esp</protocol-parameters>" +
                 "                <esp-algorithms>" +
-                "                    <integrity>2</integrity>" +
+                "                    <integrity>"+ config.getCryptoConfig().getIntAlg().getValue() +"</integrity>" +
                 "                    <encryption>" +
                 "                        <id>1</id>" +
-                "                        <algorithm-type>3</algorithm-type>" +
-                "                        <key-length>128</key-length>" +
+                "                        <algorithm-type>"+config.getCryptoConfig().getEncAlg().getValue() +"</algorithm-type>" +
+                "                        <key-length>+"+config.getCryptoConfig().getEncKeyLength()*8 +"</key-length>" +
                 "                    </encryption>" +
                 "                </esp-algorithms>" +
                 "                <tunnel>" +
@@ -226,6 +226,8 @@ public class TemplateManager {
 
 
     }
+
+
 
 
 
