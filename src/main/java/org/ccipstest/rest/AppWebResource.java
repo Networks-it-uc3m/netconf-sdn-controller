@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response;
 
 
 import static org.slf4j.LoggerFactory.getLogger;
+import java.util.regex.Pattern;
 /**
  * Sample web resource.
  */
@@ -95,6 +96,7 @@ public class AppWebResource extends AbstractWebResource {
     @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
     public Response editNetconfConfig(RequestDTO reqdto) throws Exception {
         try {
+            reqdto.validate();
             request req = RequestDTO.transformToRequest(reqdto);
             String uri_device_1 = "netconf:" + req.getNodes()[0].getIpControl() + ":830";
             String uri_device_2 = "netconf:" + req.getNodes()[1].getIpControl() + ":830";
@@ -159,7 +161,49 @@ public class AppWebResource extends AbstractWebResource {
 
             return new request(nodes, dto.encAlg, dto.intalg, softLifetime, hardLifetime);
         }
+        private static final Pattern IP_PATTERN = Pattern.compile(
+                "^(([0-9]{1,3}\\.){3}[0-9]{1,3})$");
 
+        public void validate() throws Exception {
+            validateIPs();
+            validateAlgs();
+            validateSoftAndHardValues();
+        }
+
+        private void validateIPs() throws Exception {
+            if (!isIPValid(ipData1)) throw new Exception("Invalid ipData1");
+            if (!isIPValid(ipControl1)) throw new Exception("Invalid ipControl1");
+            if (!isIPValid(ipData2)) throw new Exception("Invalid ipData2");
+            if (!isIPValid(ipControl2)) throw new Exception("Invalid ipControl2");
+        }
+
+        private boolean isIPValid(String ip) {
+            return ip != null && IP_PATTERN.matcher(ip).matches();
+        }
+
+        private void validateAlgs() throws Exception {
+            if (!Algs.ENCALGS.containsKey(encAlg)) throw new Exception("Invalid encAlg");
+            if (!Algs.AUTHALGS.containsKey(intalg)) throw new Exception("Invalid intalg");
+        }
+
+        private void validateSoftAndHardValues() throws Exception {
+            if (!isNonNegativeNumber(nBytesSoft)) throw new Exception("Invalid nBytesSoft");
+            if (!isNonNegativeNumber(nPacketsSoft)) throw new Exception("Invalid nPacketsSoft");
+            if (!isNonNegativeNumber(nTimeSoft)) throw new Exception("Invalid nTimeSoft");
+            if (!isNonNegativeNumber(nTimeIdleSoft)) throw new Exception("Invalid nTimeIdleSoft");
+            if (!isNonNegativeNumber(nBytesHard)) throw new Exception("Invalid nBytesHard");
+            if (!isNonNegativeNumber(nPacketsHard)) throw new Exception("Invalid nPacketsHard");
+            if (!isNonNegativeNumber(nTimeHard)) throw new Exception("Invalid nTimeHard");
+            if (!isNonNegativeNumber(nTimeIdleHard)) throw new Exception("Invalid nTimeIdleHard");
+        }
+
+        private boolean isNonNegativeNumber(String value) {
+            try {
+                return Long.parseLong(value) >= 0;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
         public String getNetworkInternal1() {
             return networkInternal1;
         }

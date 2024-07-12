@@ -17,16 +17,17 @@ public class StorageHandler {
     private static final Logger log = LoggerFactory.getLogger(StorageHandler.class);
     private static final Object lock = new Object();
     private static final Random random = new Random();
-    static long key=0;
     public static NetconfController controller;
 
 
     public static long generateUniqueRandomKey() {
-
-        do {
-            key++;
-        } while (storage.containsKey(key)||key<0||key>300);
-        return key;
+        synchronized (lock) {
+            long key;
+            do {
+                key = random.nextInt() & 0xFFFFFFFFL;
+            } while (storage.containsKey(key));
+            return key;
+        }
     }
 
     // Create a new Handler and store it
