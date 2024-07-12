@@ -52,32 +52,15 @@ public class AppWebResource extends AbstractWebResource {
     @GET
     @Path("")
     public Response getGreeting() {
-
         ObjectNode node = mapper().createObjectNode().put("hello", "world");
         return ok(node).build();
     }
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY)
-    protected NetconfController netconfController;
-
-    // Inject the NetconfService
-
-
-
     @POST
     @Path("storage")
     public Response Storage() throws Exception {
-        log.info("ESTO ES LO QUE HAY DENTRO DEL HASH MAP DE HANDLERS:\n"+StorageHandler.storage);
+        log.info(StorageHandler.storage.toString());
 
-        return Response.ok().build();
-
-    }
-
-    @POST
-    @Path("reek1")
-    public Response Reek1() throws Exception {
-        StorageHandler.rekey("out/172.20.0.2/in/172.20.0.3_1");
-        StorageHandler.rekey("out/172.20.0.3/in/172.20.0.2_2");
         return Response.ok().build();
 
     }
@@ -86,18 +69,24 @@ public class AppWebResource extends AbstractWebResource {
     @Path("stop")
     @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
     public Response stop(RequestDeleteDTO request_del) throws Exception {
-
+        try {
         StorageHandler.stopTunnel(request_del.getName(), request_del.getReqId());
         return Response.ok().build();
-
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error stopping tunnel"+e.getMessage()+"\n").build();
+        }
     }
 
     @POST
     @Path("del")
     @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
     public Response del(RequestDeleteDTO request_del) throws Exception {
-        StorageHandler.deleteHandler(Long.parseLong(request_del.getReqId()));
-        return Response.ok().build();
+        try {
+            StorageHandler.deleteHandler(Long.parseLong(request_del.getReqId()));
+            return Response.ok().build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error deleting handler"+e.getMessage()+"\n").build();
+        }
 
     }
 
@@ -105,23 +94,24 @@ public class AppWebResource extends AbstractWebResource {
     @Path("edit-netconf")
     @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
     public Response editNetconfConfig(RequestDTO reqdto) throws Exception {
-        request req = RequestDTO.transformToRequest(reqdto);
-        String uri_device_1 = "netconf:"+req.getNodes()[0].getIpControl()+":830";//Cambiar por variable del request
-        String uri_device_2 = "netconf:"+req.getNodes()[1].getIpControl()+":830";
-        DeviceId new_device_1= DeviceId.deviceId(uri_device_1);
-        DeviceId new_device_2= DeviceId.deviceId(uri_device_2);
-        NetconfSession newDeviceSession_1 = StorageHandler.controller.getNetconfDevice(new_device_1).getSession();
-        NetconfSession newDeviceSession_2 = StorageHandler.controller.getNetconfDevice(new_device_2).getSession();
-        StorageHandler.createHandler(req,newDeviceSession_1,newDeviceSession_2);
-        return Response.ok().build();
-
-
+        try {
+            request req = RequestDTO.transformToRequest(reqdto);
+            String uri_device_1 = "netconf:" + req.getNodes()[0].getIpControl() + ":830";
+            String uri_device_2 = "netconf:" + req.getNodes()[1].getIpControl() + ":830";
+            DeviceId new_device_1 = DeviceId.deviceId(uri_device_1);
+            DeviceId new_device_2 = DeviceId.deviceId(uri_device_2);
+            NetconfSession newDeviceSession_1 = StorageHandler.controller.getNetconfDevice(new_device_1).getSession();
+            NetconfSession newDeviceSession_2 = StorageHandler.controller.getNetconfDevice(new_device_2).getSession();
+            StorageHandler.createHandler(req, newDeviceSession_1, newDeviceSession_2);
+            return Response.ok().build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error editing Netconf config: "+e.getMessage()+"\n").build();
+        }
     }
 
     public static class RequestDeleteDTO {
         String reqId;
         String name;
-
 
         public String getReqId() {
             return this.reqId;
@@ -157,6 +147,7 @@ public class AppWebResource extends AbstractWebResource {
         public String nPacketsHard;
         public String nTimeHard;
         public String nTimeIdleHard;
+
 
         public static request transformToRequest(RequestDTO dto) {
             Node[] nodes = new Node[2];

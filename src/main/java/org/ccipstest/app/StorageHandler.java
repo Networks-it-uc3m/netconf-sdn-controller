@@ -33,26 +33,26 @@ public class StorageHandler {
     public static void createHandler(request request, NetconfSession newDeviceSession_1, NetconfSession newDeviceSession_2) throws Exception {
         synchronized (lock) {
             long req_id = generateUniqueRandomKey();
-
+            try {
             Handler h = Handler.newHandler(request, req_id, newDeviceSession_1, newDeviceSession_2);
             System.out.println("Handler created");
             if (h == null) {
                 throw new Exception("Error creating handler");
             }
 
-            // This will mean that most probably the handler has established the session with the Netconf server
             if (!h.setInitialConfigValues(newDeviceSession_1, newDeviceSession_2)) {
                 throw new Exception("Error setting initial config values");
             }
             System.out.println("Initial values have been established");
             System.out.printf("Handler assigned to id %s%n", req_id);
 
-            //lock.writeLock().lock();
-            try {
+
+
                 storage.put(req_id, h);
                 System.out.printf("Handler %s stored%n", req_id);
-            } finally {
-                //lock.writeLock().unlock();
+            } catch (Exception e) {
+                log.error("Exception occurred while creating handler: {}", e.getMessage());
+                throw e;
             }
         }
 
@@ -73,46 +73,51 @@ public class StorageHandler {
                 } else {
                     storage.remove(id);
                 }
-            } finally {
-                //lock.writeLock().unlock();
+            } catch (Exception e) {
+                log.error("Exception occurred while deleting handler: {}", e.getMessage());
+                throw e;
             }
         }
     }
 
     public static void stopTunnel(String name, String reqId) throws Exception {
         synchronized (lock) {
+            try {
+                Handler handler;
+                if (reqId != null) {
 
-            Handler handler;
-            if (reqId != null) {
-
-                handler = storage.get(Long.parseLong(reqId));//IMPORTANTTTTTTTTTTTTTTTTTT
-                if (handler == null) {
-                    throw new Exception(String.format("Handler with id %s does not exist", reqId));
-                }
-            } else if (name != null) {
-                Long reqId_aux = findHandlerKeyContaining(name);
-                if (reqId_aux == null) {
-                    reqId_aux = findHandlerKeyContaining(name+"_stopped");
-                    if (reqId_aux == null) {
-                        throw new Exception(String.format("Handler with name %s does not exist", name));
+                    handler = storage.get(Long.parseLong(reqId));//IMPORTANTTTTTTTTTTTTTTTTTT
+                    if (handler == null) {
+                        throw new Exception(String.format("Handler with id %s does not exist", reqId));
                     }
+                } else if (name != null) {
+                    Long reqId_aux = findHandlerKeyContaining(name);
+                    if (reqId_aux == null) {
+                        reqId_aux = findHandlerKeyContaining(name + "_stopped");
+                        if (reqId_aux == null) {
+                            throw new Exception(String.format("Handler with name %s does not exist", name));
+                        }
+                    }
+                    handler = storage.get(reqId_aux);
+                } else {
+                    throw new Exception("RequestDeleteDTO must contain either reqId or name");
                 }
-                handler = storage.get(reqId_aux);
-            } else {
-                throw new Exception("RequestDeleteDTO must contain either reqId or name");
-            }
 
-            if (handler.isStopped()) {
-                log.info("Handler {} is already stopped", reqId != null ? reqId : name);
-                return;
-            }
+                if (handler.isStopped()) {
+                    log.info("Handler {} is already stopped", reqId != null ? reqId : name);
+                    return;
+                }
 
-            if (!handler.stop()) {
-                throw new Exception("Error stopping handler");
-            } else {
-                storage.remove(name != null ? reqId : findHandlerKeyContaining(name));
+                if (!handler.stop()) {
+                    throw new Exception("Error stopping handler");
+                } else {
+                    storage.remove(name != null ? reqId : findHandlerKeyContaining(name));
 
-                //log.info("Handler {} removed after stopping", request_del.getReqId() != null ? request_del.getReqId() : request_del.getName());
+                    //log.info("Handler {} removed after stopping", request_del.getReqId() != null ? request_del.getReqId() : request_del.getName());
+                }
+            } catch (Exception e) {
+                log.error("Exception occurred while stopping tunnel: {}", e.getMessage());
+                throw e;
             }
 
         }
@@ -136,8 +141,9 @@ public class StorageHandler {
                 }
 
 
-            } finally {
-                //lock.writeLock().unlock();
+            } catch (Exception e) {
+                log.error("Exception occurred while rekeying: {}", e.getMessage());
+                throw e;
             }
         }
     }

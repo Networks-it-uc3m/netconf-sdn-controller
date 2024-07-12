@@ -42,7 +42,12 @@ docker network create custom_bridge
 docker build -t agentspirs:1.0.0 .
 ```
 
-### Bring up the agents with Docker Compose
+
+### Option1 :generate Docker-compose, generate netconf-cfg and Bring up the agents with Docker Compose:
+```bash
+python3 up_docker_compose_netconf-cfg.py
+```
+### Option 2: Bring up the agents with Docker Compose
 ```bash
 docker-compose up
 ```

@@ -10,146 +10,21 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class IpsecConfig {
-    //public static int id=1; ///PARA ASIGNARLO
-
     private IPsecConfigType confType;
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     private String name;
-
-
     private long spi;
     private long reqId;
-    // Config Addresses
-    private String origin; // Always outbound
-    private String end;    // Always inbound
-    // Prefix addresses only for g2g case
+    private String origin;
+    private String end;
     private String prefixOrigin = null;
     private String prefixEnd = null;
-    // Data Addresses
     private String dataOrigin;
     private String dataEnd;
-    // Crypto data
     private CryptoConfig cryptoConfig;
-    // Lifetime config
     private LifetimeConfig softLifetime;
     private LifetimeConfig hardLifetime;
-    // Last rekey
     private long timestamp;
-
     private Map<Long, Boolean> reKeysDone;
-
-    public IPsecConfigType getConfType() {
-        return confType;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public long getSpi() {
-        return this.spi;
-    }
-
-    public void setNewSpi() {
-        this.spi = SPIManager.getNewSPI();
-        this.name = String.format("out/%s/in/%s", this.getDataOrigin(), this.getDataEnd());
-    }
-
-
-    public long getReqId() {
-        return this.reqId;
-    }
-
-    public String getOrigin() {
-        return this.origin;
-    }
-
-    public String getEnd() {
-        return this.end;
-    }
-
-    public String getPrefixOrigin() {
-        return this.prefixOrigin;
-    }
-
-    public String getPrefixEnd() {
-        return this.prefixEnd;
-    }
-
-    public String getDataOrigin() {
-        return this.dataOrigin;
-    }
-
-    public String getDataEnd() {
-        return this.dataEnd;
-    }
-
-    public CryptoConfig getCryptoConfig() {
-        return this.cryptoConfig;
-    }
-
-    public LifetimeConfig getSoftLifetime() {
-        return this.softLifetime;
-    }
-
-    public LifetimeConfig getHardLifetime() {
-        return this.hardLifetime;
-    }
-
-    public long getTimestamp() {
-        return this.timestamp;
-    }
-
-
-    public Map<Long, Boolean> getReKeysDone() {
-        return this.reKeysDone;
-    }
-
-    //    @Override
-//    public String toString() {
-//        return "IpsecConfig{" +
-//                "confType=" + confType +
-//                ", name='" + name + '\'' +
-//                ", spi=" + spi +
-//                ", reqId=" + reqId +
-//                ", origin='" + origin + '\'' +
-//                ", end='" + end + '\'' +
-//                ", prefixOrigin='" + prefixOrigin + '\'' +
-//                ", prefixEnd='" + prefixEnd + '\'' +
-//                ", dataOrigin='" + dataOrigin + '\'' +
-//                ", dataEnd='" + dataEnd + '\'' +
-//                ", cryptoConfig=" + cryptoConfig +
-//                ", softLifetime=" + softLifetime +
-//                ", hardLifetime=" + hardLifetime +
-//                ", timestamp=" + timestamp +
-//                ", reKeysDone=" + reKeysDone +
-//                "}\n";
-//    }
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Configuration Type: ").append(confType).append("\n");
-        sb.append("Name: ").append(name).append("\n");
-        sb.append("SPI: ").append(spi).append("\n");
-        sb.append("Request ID: ").append(reqId).append("\n");
-        sb.append("Origin: ").append(origin).append("\n");
-        sb.append("End: ").append(end).append("\n");
-        sb.append("Prefix Origin: ").append(prefixOrigin != null ? prefixOrigin : "N/A").append("\n");
-        sb.append("Prefix End: ").append(prefixEnd != null ? prefixEnd : "N/A").append("\n");
-        sb.append("Data Origin: ").append(dataOrigin).append("\n");
-        sb.append("Data End: ").append(dataEnd).append("\n");
-        sb.append("Crypto Configuration: ").append(cryptoConfig).append("\n");
-        sb.append("Soft Lifetime: ").append(softLifetime).append("\n");
-        sb.append("Hard Lifetime: ").append(hardLifetime).append("\n");
-        sb.append("Timestamp: ").append(timestamp).append("\n");
-        sb.append("Rekeys Done: ").append(reKeysDone).append("\n");
-        return sb.toString();
-    }
-
 
     public enum IPsecConfigType {
         // H2H Used for host to host configuration
@@ -252,6 +127,95 @@ public class IpsecConfig {
         return new String[]{outCfg, inCfg};
     }
 
+    public IPsecConfigType getConfType() {
+        return confType;
+    }
 
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public long getSpi() {
+        return this.spi;
+    }
+
+    public void setNewSpi() {
+        this.spi = SPIManager.getNewSPI();
+        this.name = String.format("out/%s/in/%s", this.getDataOrigin(), this.getDataEnd());
+    }
+
+    public long getReqId() {
+        return this.reqId;
+    }
+
+    public String getOrigin() {
+        return this.origin;
+    }
+
+    public String getEnd() {
+        return this.end;
+    }
+
+    public String getPrefixOrigin() {
+        return this.prefixOrigin;
+    }
+
+    public String getPrefixEnd() {
+        return this.prefixEnd;
+    }
+
+    public String getDataOrigin() {
+        return this.dataOrigin;
+    }
+
+    public String getDataEnd() {
+        return this.dataEnd;
+    }
+
+    public CryptoConfig getCryptoConfig() {
+        return this.cryptoConfig;
+    }
+
+    public LifetimeConfig getSoftLifetime() {
+        return this.softLifetime;
+    }
+
+    public LifetimeConfig getHardLifetime() {
+        return this.hardLifetime;
+    }
+
+    public long getTimestamp() {
+        return this.timestamp;
+    }
+
+
+    public Map<Long, Boolean> getReKeysDone() {
+        return this.reKeysDone;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Configuration Type: ").append(confType).append("\n");
+        sb.append("Name: ").append(name).append("\n");
+        sb.append("SPI: ").append(spi).append("\n");
+        sb.append("Request ID: ").append(reqId).append("\n");
+        sb.append("Origin: ").append(origin).append("\n");
+        sb.append("End: ").append(end).append("\n");
+        sb.append("Prefix Origin: ").append(prefixOrigin != null ? prefixOrigin : "N/A").append("\n");
+        sb.append("Prefix End: ").append(prefixEnd != null ? prefixEnd : "N/A").append("\n");
+        sb.append("Data Origin: ").append(dataOrigin).append("\n");
+        sb.append("Data End: ").append(dataEnd).append("\n");
+        sb.append("Crypto Configuration: ").append(cryptoConfig).append("\n");
+        sb.append("Soft Lifetime: ").append(softLifetime).append("\n");
+        sb.append("Hard Lifetime: ").append(hardLifetime).append("\n");
+        sb.append("Timestamp: ").append(timestamp).append("\n");
+        sb.append("Rekeys Done: ").append(reKeysDone).append("\n");
+        return sb.toString();
+    }
 
 }

@@ -72,19 +72,6 @@ public class CryptoConfig {
         this.iv = iv;
     }
 
-    //    @Override
-//    public String toString() {
-//        return "CryptoConfig{" +
-//                "encAlg=" + encAlg +
-//                ", intAlg=" + intAlg +
-//                ", encKeyLength=" + encKeyLength +
-//                ", authKeyLength=" + authKeyLength +
-//                ", encKey=" + Arrays.toString(encKey) +
-//                ", intKey=" + Arrays.toString(intKey) +
-//                ", iv=" + Arrays.toString(iv) +
-//                ", secureRandom=" + secureRandom +
-//                '}';
-//    }
 
     @Override
     public String toString() {
