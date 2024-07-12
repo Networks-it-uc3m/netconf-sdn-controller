@@ -126,6 +126,11 @@ curl --location 'http://localhost:8181/onos/ccipstest-app/sample/del' -H "Conten
 
 ```
 
+### Check stored configurations
+```bash
+curl -X POST 'http://localhost:8181/onos/ccipstest-app/sample/storage' --user onos:rocks
+'''
+
 # Tunnel Test
 
 ### Test connectivity between agents
