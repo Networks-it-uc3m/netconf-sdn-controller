@@ -3,7 +3,7 @@ FROM juancarlosvillenmolina/netopeer2:1.0.0
 ARG ENARX_RA=OFF
 ENV DEBUG_LVL_CCIPS=3
 ENV DEBUG_LVL_NETOPEER=0
-RUN apt update && apt install -y libpthread-stubs0-dev tcpdump iproute2
+RUN apt update && apt install -y libpthread-stubs0-dev tcpdump iproute2 iputils-ping
 
 ADD . /cfgipsec2
 WORKDIR /cfgipsec2
