@@ -24,7 +24,7 @@ public class StorageHandler {
         synchronized (lock) {
             long key;
             do {
-                key = random.nextInt() & 0xFFFFFFFFL;
+                key = random.nextInt(10000) & 0xFFFFFFFFL;
             } while (storage.containsKey(key));
             return key;
         }
