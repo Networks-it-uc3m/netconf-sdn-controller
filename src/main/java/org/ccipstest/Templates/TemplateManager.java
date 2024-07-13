@@ -1,145 +1,154 @@
 package org.ccipstest.Templates;
-import org.ccipstest.app.IpsecConfig;
 
+import org.ccipstest.app.IpsecConfig;
 
 public class TemplateManager {
 
-
-
+    private static final String IPSEC_IKELESS_NAMESPACE = "xmlns=\"urn:ietf:params:xml:ns:yang:ietf-i2nsf-ikeless\" xmlns:nc=\"urn:ietf:params:xml:ns:netconf:base:1.0\"";
+    private static final String EXT_SEQ_NUM_TRUE = "<ext-seq-num>true</ext-seq-num>";
+    private static final String SEQ_OVERFLOW_FALSE = "<seq-overflow>false</seq-overflow>";
+    private static final String PROTOCOL_PARAMETERS_ESP = "<protocol-parameters>esp</protocol-parameters>";
+    private static final String MODE_TUNNEL = "<mode>tunnel</mode>";
+    private static final String INNER_PROTOCOL_ANY = "<inner-protocol>any</inner-protocol>";
+    private static final String ACTION_PROTECT = "<action>protect</action>";
 
     public static String formatG2GSADValues(IpsecConfig config, String localPrefix, String remotePrefix, String local, String remote) {
-
-        return
-
-                        "        <sad-entry>" +
-                        "            <name>" + config.getName() + "_" + config.getSpi() + "</name>" +
-                        "            <reqid>" + config.getReqId() + "</reqid>" +
-                        "            <ipsec-sa-config>" +
-                        "                <spi>" + config.getSpi() + "</spi>" +
-                        "                <ext-seq-num>" + "true" + "</ext-seq-num>" +
-                        "                <seq-overflow>" + "false" + "</seq-overflow>" +
-                        "                <traffic-selector>" +
-                        "                    <local-prefix>" + localPrefix + "</local-prefix>" +
-                        "                    <remote-prefix>" + remotePrefix + "</remote-prefix>" +
-                        "                    <inner-protocol>" + "any" + "</inner-protocol>" +
-                        "                </traffic-selector>" +
-                        "                <protocol-parameters>esp</protocol-parameters>" +
-                        "                <mode>tunnel</mode>" +
-                        "                <esp-sa>" +
-                        "                    <encryption>" +
-                        "                        <encryption-algorithm>"+config.getCryptoConfig().getEncAlg().getValue()+"</encryption-algorithm>" +
-                        "                        <key>"+ byteArrayToHexString(config.getCryptoConfig().getEncKey()) +"</key>" +
-                        "                       <iv>"+ byteArrayToHexString(config.getCryptoConfig().getIv()) + "</iv>" +
-                        "                    </encryption>" +
-                        "                    <integrity>" +
-                        "                        <integrity-algorithm>"+config.getCryptoConfig().getIntAlg().getValue()+"</integrity-algorithm>" +
-                        "                        <key>"+ byteArrayToHexString(config.getCryptoConfig().getIntKey())+"</key>" +
-                        "                    </integrity>" +
-                        "                </esp-sa>" +
-                        "                <sa-lifetime-hard>" +
-                        "                    <bytes>" + config.getHardLifetime().getnBytes()+ "</bytes>" +
-                        "                    <packets>" +config.getHardLifetime().getnPackets()+"</packets>" +
-                        "                    <time>" +config.getHardLifetime().getnTime()+ "</time>" +
-                        "                    <idle>"+config.getHardLifetime().getnTimeIdle()+"</idle>" +
-                        "                </sa-lifetime-hard>" +
-                        "                <sa-lifetime-soft>" +
-                        "                    <bytes>" + config.getSoftLifetime().getnBytes() + "</bytes>" +
-                        "                    <packets>" + config.getSoftLifetime().getnPackets() + "</packets>" +
-                        "                    <time>" + config.getSoftLifetime().getnTime() + "</time>" +
-                        "                    <idle>" + config.getSoftLifetime().getnTimeIdle() + "</idle>" +
-                        "                    <action>replace</action>" +
-                        "                </sa-lifetime-soft>" +
-                        "                <tunnel>" +
-                        "                <local>"+local+"</local>"+
-                        "                <remote>"+remote+"</remote>"+
-                        "                </tunnel>"+
-                        "            </ipsec-sa-config>" +
-                        "        </sad-entry>" +
-                        "    </sad>";
+        return new StringBuilder()
+                .append("<sad-entry>")
+                .append("<name>").append(config.getName()).append("_").append(config.getSpi()).append("</name>")
+                .append("<reqid>").append(config.getReqId()).append("</reqid>")
+                .append("<ipsec-sa-config>")
+                .append("<spi>").append(config.getSpi()).append("</spi>")
+                .append(EXT_SEQ_NUM_TRUE)
+                .append(SEQ_OVERFLOW_FALSE)
+                .append("<traffic-selector>")
+                .append("<local-prefix>").append(localPrefix).append("</local-prefix>")
+                .append("<remote-prefix>").append(remotePrefix).append("</remote-prefix>")
+                .append(INNER_PROTOCOL_ANY)
+                .append("</traffic-selector>")
+                .append(PROTOCOL_PARAMETERS_ESP)
+                .append(MODE_TUNNEL)
+                .append("<esp-sa>")
+                .append("<encryption>")
+                .append("<encryption-algorithm>").append(config.getCryptoConfig().getEncAlg().getValue()).append("</encryption-algorithm>")
+                .append("<key>").append(byteArrayToHexString(config.getCryptoConfig().getEncKey())).append("</key>")
+                .append("<iv>").append(byteArrayToHexString(config.getCryptoConfig().getIv())).append("</iv>")
+                .append("</encryption>")
+                .append("<integrity>")
+                .append("<integrity-algorithm>").append(config.getCryptoConfig().getIntAlg().getValue()).append("</integrity-algorithm>")
+                .append("<key>").append(byteArrayToHexString(config.getCryptoConfig().getIntKey())).append("</key>")
+                .append("</integrity>")
+                .append("</esp-sa>")
+                .append("<sa-lifetime-hard>")
+                .append("<bytes>").append(config.getHardLifetime().getnBytes()).append("</bytes>")
+                .append("<packets>").append(config.getHardLifetime().getnPackets()).append("</packets>")
+                .append("<time>").append(config.getHardLifetime().getnTime()).append("</time>")
+                .append("<idle>").append(config.getHardLifetime().getnTimeIdle()).append("</idle>")
+                .append("</sa-lifetime-hard>")
+                .append("<sa-lifetime-soft>")
+                .append("<bytes>").append(config.getSoftLifetime().getnBytes()).append("</bytes>")
+                .append("<packets>").append(config.getSoftLifetime().getnPackets()).append("</packets>")
+                .append("<time>").append(config.getSoftLifetime().getnTime()).append("</time>")
+                .append("<idle>").append(config.getSoftLifetime().getnTimeIdle()).append("</idle>")
+                .append("<action>replace</action>")
+                .append("</sa-lifetime-soft>")
+                .append("<tunnel>")
+                .append("<local>").append(local).append("</local>")
+                .append("<remote>").append(remote).append("</remote>")
+                .append("</tunnel>")
+                .append("</ipsec-sa-config>")
+                .append("</sad-entry>")
+                .toString();
     }
 
     public static String formatG2GSPDValues(IpsecConfig config, String localPrefix, String remotePrefix, String local, String remote, String direction) {
-        return "<spd-entry>" +
-                "    <name>" + config.getName() + "_" + config.getSpi() + "</name>" +
-                "    <direction>" + direction + "</direction>" +
-                "    <reqid>" + config.getReqId() + "</reqid>" +
-                "    <ipsec-policy-config>" +
-                "        <anti-replay-window-size>32</anti-replay-window-size>" +
-                "        <traffic-selector>" +
-                "            <local-prefix>" + localPrefix + "</local-prefix>" +
-                "            <remote-prefix>" + remotePrefix + "</remote-prefix>" +
-                "            <inner-protocol>any</inner-protocol>" +
-                "        </traffic-selector>" +
-                "        <processing-info>" +
-                "            <action>protect</action>" +
-                "            <ipsec-sa-cfg>" +
-                "                <ext-seq-num>true</ext-seq-num>" +
-                "                <seq-overflow>false</seq-overflow>" +
-                "                <mode>tunnel</mode>" +
-                "                <protocol-parameters>esp</protocol-parameters>" +
-                "                <esp-algorithms>" +
-                "                    <integrity>" + config.getCryptoConfig().getIntAlg().getValue() + "</integrity>" +
-                "                    <encryption>" +
-                "                        <id>1</id>" +
-                "                        <algorithm-type>" + config.getCryptoConfig().getEncAlg().getValue() + "</algorithm-type>" +
-                "                        <key-length>" + config.getCryptoConfig().getEncKeyLength()*8 + "</key-length>" +
-                "                    </encryption>" +
-                "                </esp-algorithms>" +
-                "            </ipsec-sa-cfg>" +
-                "        </processing-info>" +
-                "    </ipsec-policy-config>" +
-                "</spd-entry>";
-
+        return new StringBuilder()
+                .append("<spd-entry>")
+                .append("<name>").append(config.getName()).append("_").append(config.getSpi()).append("</name>")
+                .append("<direction>").append(direction).append("</direction>")
+                .append("<reqid>").append(config.getReqId()).append("</reqid>")
+                .append("<ipsec-policy-config>")
+                .append("<anti-replay-window-size>32</anti-replay-window-size>")
+                .append("<traffic-selector>")
+                .append("<local-prefix>").append(localPrefix).append("</local-prefix>")
+                .append("<remote-prefix>").append(remotePrefix).append("</remote-prefix>")
+                .append(INNER_PROTOCOL_ANY)
+                .append("</traffic-selector>")
+                .append("<processing-info>")
+                .append(ACTION_PROTECT)
+                .append("<ipsec-sa-cfg>")
+                .append(EXT_SEQ_NUM_TRUE)
+                .append(SEQ_OVERFLOW_FALSE)
+                .append(MODE_TUNNEL)
+                .append(PROTOCOL_PARAMETERS_ESP)
+                .append("<esp-algorithms>")
+                .append("<integrity>").append(config.getCryptoConfig().getIntAlg().getValue()).append("</integrity>")
+                .append("<encryption>")
+                .append("<id>1</id>")
+                .append("<algorithm-type>").append(config.getCryptoConfig().getEncAlg().getValue()).append("</algorithm-type>")
+                .append("<key-length>").append(config.getCryptoConfig().getEncKeyLength() * 8).append("</key-length>")
+                .append("</encryption>")
+                .append("</esp-algorithms>")
+                .append("<tunnel>")
+                .append("<local>").append(local).append("</local>")
+                .append("<remote>").append(remote).append("</remote>")
+                .append("</tunnel>")
+                .append("</ipsec-sa-cfg>")
+                .append("</processing-info>")
+                .append("</ipsec-policy-config>")
+                .append("</spd-entry>")
+                .toString();
     }
 
-    public static String formatH2HSADValues(IpsecConfig config, String localPrefix, String remotePrefix,String local, String remote) {
-        return
-
-                        "        <sad-entry>" +
-                        "            <name>" + config.getName() + "_" + config.getSpi() + "</name>" +
-                        "            <reqid>" + config.getReqId() + "</reqid>" +
-                        "            <ipsec-sa-config>" +
-                        "                <spi>" + config.getSpi() + "</spi>" +
-                        "                <ext-seq-num>" + "true" + "</ext-seq-num>" +
-                        "                <seq-overflow>" + "false" + "</seq-overflow>" +
-                        "                <traffic-selector>" +
-                        "                    <local-prefix>" + localPrefix + "/32</local-prefix>" +
-                        "                    <remote-prefix>" + remotePrefix + "/32</remote-prefix>" +
-                        "                    <inner-protocol>" + "any" + "</inner-protocol>" +
-                        "                </traffic-selector>" +
-                        "                <protocol-parameters>esp</protocol-parameters>" +
-                        "                <mode>tunnel</mode>" +
-                        "                <esp-sa>" +
-                        "                    <encryption>" +
-                        "                        <encryption-algorithm>"+config.getCryptoConfig().getEncAlg().getValue()+"</encryption-algorithm>" +
-                        "                        <key>"+byteArrayToHexString(config.getCryptoConfig().getEncKey())+"</key>" +
-                        "                       <iv>"+byteArrayToHexString(config.getCryptoConfig().getIv()) + "</iv>" +
-                        "                    </encryption>" +
-                        "                    <integrity>" +
-                        "                        <integrity-algorithm>"+config.getCryptoConfig().getIntAlg().getValue()+"</integrity-algorithm>"+
-                        "                        <key>"+ byteArrayToHexString(config.getCryptoConfig().getIntKey()) +"</key>" +
-                        "                    </integrity>" +
-                        "                </esp-sa>" +
-                        "                <sa-lifetime-hard>" +
-                        "                    <bytes>" + config.getHardLifetime().getnBytes()+ "</bytes>" +
-                        "                    <packets>" +config.getHardLifetime().getnPackets()+"</packets>" +
-                        "                    <time>" +config.getHardLifetime().getnTime()+ "</time>" +
-                        "                    <idle>"+config.getHardLifetime().getnTimeIdle()+"</idle>" +
-                        "                </sa-lifetime-hard>" +
-                        "                <sa-lifetime-soft>" +
-                        "                    <bytes>" + config.getSoftLifetime().getnBytes() + "</bytes>" +
-                        "                    <packets>" + config.getSoftLifetime().getnPackets() + "</packets>" +
-                        "                    <time>" + config.getSoftLifetime().getnTime() + "</time>" +
-                        "                    <idle>" + config.getSoftLifetime().getnTimeIdle() + "</idle>" +
-                        "                    <action>replace</action>" +
-                        "                </sa-lifetime-soft>" +
-                                "                <tunnel>" +
-                                "                <local>"+local+"</local>"+
-                                "                <remote>"+remote+"</remote>"+
-                                "                </tunnel>"+
-                        "            </ipsec-sa-config>" +
-                        "        </sad-entry>";
+    public static String formatH2HSADValues(IpsecConfig config, String localPrefix, String remotePrefix, String local, String remote) {
+        return new StringBuilder()
+                .append("<sad-entry>")
+                .append("<name>").append(config.getName()).append("_").append(config.getSpi()).append("</name>")
+                .append("<reqid>").append(config.getReqId()).append("</reqid>")
+                .append("<ipsec-sa-config>")
+                .append("<spi>").append(config.getSpi()).append("</spi>")
+                .append(EXT_SEQ_NUM_TRUE)
+                .append(SEQ_OVERFLOW_FALSE)
+                .append("<traffic-selector>")
+                .append("<local-prefix>").append(localPrefix).append("/32</local-prefix>")
+                .append("<remote-prefix>").append(remotePrefix).append("/32</remote-prefix>")
+                .append(INNER_PROTOCOL_ANY)
+                .append("</traffic-selector>")
+                .append(PROTOCOL_PARAMETERS_ESP)
+                .append(MODE_TUNNEL)
+                .append("<esp-sa>")
+                .append("<encryption>")
+                .append("<encryption-algorithm>").append(config.getCryptoConfig().getEncAlg().getValue()).append("</encryption-algorithm>")
+                .append("<key>").append(byteArrayToHexString(config.getCryptoConfig().getEncKey())).append("</key>")
+                .append("<iv>").append(byteArrayToHexString(config.getCryptoConfig().getIv())).append("</iv>")
+                .append("</encryption>")
+                .append("<integrity>")
+                .append("<integrity-algorithm>").append(config.getCryptoConfig().getIntAlg().getValue()).append("</integrity-algorithm>")
+                .append("<key>").append(byteArrayToHexString(config.getCryptoConfig().getIntKey())).append("</key>")
+                .append("</integrity>")
+                .append("</esp-sa>")
+                .append("<sa-lifetime-hard>")
+                .append("<bytes>").append(config.getHardLifetime().getnBytes()).append("</bytes>")
+                .append("<packets>").append(config.getHardLifetime().getnPackets()).append("</packets>")
+                .append("<time>").append(config.getHardLifetime().getnTime()).append("</time>")
+                .append("<idle>").append(config.getHardLifetime().getnTimeIdle()).append("</idle>")
+                .append("</sa-lifetime-hard>")
+                .append("<sa-lifetime-soft>")
+                .append("<bytes>").append(config.getSoftLifetime().getnBytes()).append("</bytes>")
+                .append("<packets>").append(config.getSoftLifetime().getnPackets()).append("</packets>")
+                .append("<time>").append(config.getSoftLifetime().getnTime()).append("</time>")
+                .append("<idle>").append(config.getSoftLifetime().getnTimeIdle()).append("</idle>")
+                .append("<action>replace</action>")
+                .append("</sa-lifetime-soft>")
+                .append("<tunnel>")
+                .append("<local>").append(local).append("</local>")
+                .append("<remote>").append(remote).append("</remote>")
+                .append("</tunnel>")
+                .append("</ipsec-sa-config>")
+                .append("</sad-entry>")
+                .toString();
     }
+
     public static String byteArrayToHexString(byte[] byteArray) {
         StringBuilder hexString = new StringBuilder();
         for (int i = 0; i < byteArray.length; i++) {
@@ -150,103 +159,89 @@ public class TemplateManager {
         }
         return hexString.toString();
     }
-    public static String formatH2HSPDValues(IpsecConfig config, String localPrefix, String remotePrefix, String direction) {
-        return "<spd-entry>" +
-                "    <name>" + config.getName() + "_" + config.getSpi() + "</name>" +
-                "    <direction>" + direction + "</direction>" +
-                "    <reqid>" + config.getReqId() + "</reqid>" +
-                "    <ipsec-policy-config>" +
-                "        <anti-replay-window-size>32</anti-replay-window-size>" +
-                "        <traffic-selector>" +
-                "            <local-prefix>" + localPrefix + "/32</local-prefix>" +
-                "            <remote-prefix>" + remotePrefix + "/32</remote-prefix>" +
-                "            <inner-protocol>any</inner-protocol>" +
-                "        </traffic-selector>" +
-                "        <processing-info>" +
-                "            <action>protect</action>" +
-                "            <ipsec-sa-cfg>" +
-                "                <ext-seq-num>true</ext-seq-num>" +
-                "                <seq-overflow>false</seq-overflow>" +
-                "                <mode>tunnel</mode>" +
-                "                <protocol-parameters>esp</protocol-parameters>" +
-                "                <esp-algorithms>" +
-                "                    <integrity>"+ config.getCryptoConfig().getIntAlg().getValue() +"</integrity>" +
-                "                    <encryption>" +
-                "                        <id>1</id>" +
-                "                        <algorithm-type>"+config.getCryptoConfig().getEncAlg().getValue() +"</algorithm-type>" +
-                "                        <key-length>+"+config.getCryptoConfig().getEncKeyLength()*8 +"</key-length>" +
-                "                    </encryption>" +
-                "                </esp-algorithms>" +
-                "                <tunnel>" +
-                "                <local>"+localPrefix+"</local>"+
-                "                <remote>"+remotePrefix+"</remote>"+
-                "                </tunnel>"+
-                "            </ipsec-sa-cfg>" +
-                "        </processing-info>" +
-                "    </ipsec-policy-config>" +
-                "</spd-entry>";
 
+    public static String formatH2HSPDValues(IpsecConfig config, String localPrefix, String remotePrefix, String direction) {
+        return new StringBuilder()
+                .append("<spd-entry>")
+                .append("<name>").append(config.getName()).append("_").append(config.getSpi()).append("</name>")
+                .append("<direction>").append(direction).append("</direction>")
+                .append("<reqid>").append(config.getReqId()).append("</reqid>")
+                .append("<ipsec-policy-config>")
+                .append("<anti-replay-window-size>32</anti-replay-window-size>")
+                .append("<traffic-selector>")
+                .append("<local-prefix>").append(localPrefix).append("/32</local-prefix>")
+                .append("<remote-prefix>").append(remotePrefix).append("/32</remote-prefix>")
+                .append(INNER_PROTOCOL_ANY)
+                .append("</traffic-selector>")
+                .append("<processing-info>")
+                .append(ACTION_PROTECT)
+                .append("<ipsec-sa-cfg>")
+                .append(EXT_SEQ_NUM_TRUE)
+                .append(SEQ_OVERFLOW_FALSE)
+                .append(MODE_TUNNEL)
+                .append(PROTOCOL_PARAMETERS_ESP)
+                .append("<esp-algorithms>")
+                .append("<integrity>").append(config.getCryptoConfig().getIntAlg().getValue()).append("</integrity>")
+                .append("<encryption>")
+                .append("<id>1</id>")
+                .append("<algorithm-type>").append(config.getCryptoConfig().getEncAlg().getValue()).append("</algorithm-type>")
+                .append("<key-length>").append(config.getCryptoConfig().getEncKeyLength() * 8).append("</key-length>")
+                .append("</encryption>")
+                .append("</esp-algorithms>")
+                .append("<tunnel>")
+                .append("<local>").append(localPrefix).append("</local>")
+                .append("<remote>").append(remotePrefix).append("</remote>")
+                .append("</tunnel>")
+                .append("</ipsec-sa-cfg>")
+                .append("</processing-info>")
+                .append("</ipsec-policy-config>")
+                .append("</spd-entry>")
+                .toString();
     }
 
     public static String formatDelSAD(IpsecConfig config) {
-        return
-                "<ipsec-ikeless xmlns=\"urn:ietf:params:xml:ns:yang:ietf-i2nsf-ikeless\" xmlns:nc=\"urn:ietf:params:xml:ns:netconf:base:1.0\">" +
-                        "<sad>" +
-                        "<sad-entry nc:operation=\"delete\">" +
-                        "    <name>" + config.getName() + "_" + config.getSpi() + "</name>" +
-                        "    <reqid>" + config.getReqId() + "</reqid>" +
-                        "</sad-entry>" +
-                        "</sad>" +
-                        "</ipsec-ikeless>";
-
+        return new StringBuilder()
+                .append("<ipsec-ikeless ").append(IPSEC_IKELESS_NAMESPACE).append(">")
+                .append("<sad>")
+                .append("<sad-entry nc:operation=\"delete\">")
+                .append("<name>").append(config.getName()).append("_").append(config.getSpi()).append("</name>")
+                .append("<reqid>").append(config.getReqId()).append("</reqid>")
+                .append("</sad-entry>")
+                .append("</sad>")
+                .append("</ipsec-ikeless>")
+                .toString();
     }
-    public static String formatDelSAD(IpsecConfig config,long oldSPI) {
-        return
-                "<ipsec-ikeless xmlns=\"urn:ietf:params:xml:ns:yang:ietf-i2nsf-ikeless\" xmlns:nc=\"urn:ietf:params:xml:ns:netconf:base:1.0\">" +
-                        "<sad>" +
-                        "<sad-entry nc:operation=\"delete\">" +
-                        "    <name>" + config.getName() + "_" + oldSPI + "</name>" +
-                        "    <reqid>" + config.getReqId() + "</reqid>" +
-                        "</sad-entry>" +
-                        "</sad>" +
-                        "</ipsec-ikeless>";
 
+    public static String formatDelSAD(IpsecConfig config, long oldSPI) {
+        return new StringBuilder()
+                .append("<ipsec-ikeless ").append(IPSEC_IKELESS_NAMESPACE).append(">")
+                .append("<sad>")
+                .append("<sad-entry nc:operation=\"delete\">")
+                .append("<name>").append(config.getName()).append("_").append(oldSPI).append("</name>")
+                .append("<reqid>").append(config.getReqId()).append("</reqid>")
+                .append("</sad-entry>")
+                .append("</sad>")
+                .append("</ipsec-ikeless>")
+                .toString();
     }
 
     public static String formatDelSPD(IpsecConfig config) {
-        return
-                "<ipsec-ikeless xmlns=\"urn:ietf:params:xml:ns:yang:ietf-i2nsf-ikeless\" xmlns:nc=\"urn:ietf:params:xml:ns:netconf:base:1.0\">" +
-                        "<spd>" +
-                        "<spd-entry nc:operation=\"delete\">" +
-                        "    <name>" + config.getName() + "_" + config.getSpi() + "</name>" +
-                        "    <reqid>" + config.getReqId() + "</reqid>" +
-                        "</spd-entry>" +
-                        "</spd>" +
-                        "</ipsec-ikeless>";
-
-
+        return new StringBuilder()
+                .append("<ipsec-ikeless ").append(IPSEC_IKELESS_NAMESPACE).append(">")
+                .append("<spd>")
+                .append("<spd-entry nc:operation=\"delete\">")
+                .append("<name>").append(config.getName()).append("_").append(config.getSpi()).append("</name>")
+                .append("<reqid>").append(config.getReqId()).append("</reqid>")
+                .append("</spd-entry>")
+                .append("</spd>")
+                .append("</ipsec-ikeless>")
+                .toString();
     }
 
-
-
-
-
-    //    public static String generateI2NSFConfig(String[] SADEntries, String[] SPDEntries) {
-//
-//        return "\n<ipsec-ikeless xmlns=\"urn:ietf:params:xml:ns:yang:ietf-i2nsf-ikeless\" xmlns:nc=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-//                +"\n<sad>"
-//                + SADEntries[0]+SADEntries[1]
-//                +"\n</sad>"
-//                +"\n<spd>"
-//                + SPDEntries[0]+SPDEntries[1]
-//                +"\n</spd>"
-//                +"\n</ipsec-ikeless>";
-//    }
     public static String generateI2NSFConfig(String[] SADEntries, String[] SPDEntries) {
         StringBuilder result = new StringBuilder();
-
-        result.append("<ipsec-ikeless xmlns=\"urn:ietf:params:xml:ns:yang:ietf-i2nsf-ikeless\" xmlns:nc=\"urn:ietf:params:xml:ns:netconf:base:1.0\">");
-        if ((SADEntries[1] != null)||(SADEntries[0] != null)) {
+        result.append("<ipsec-ikeless ").append(IPSEC_IKELESS_NAMESPACE).append(">");
+        if (SADEntries[0] != null || SADEntries[1] != null) {
             result.append("<sad>");
             if (SADEntries[0] != null) {
                 result.append(SADEntries[0]);
@@ -257,7 +252,7 @@ public class TemplateManager {
             result.append("</sad>");
         }
 
-        if ((SPDEntries[1] != null)||(SPDEntries[0] != null)) {
+        if (SPDEntries[0] != null || SPDEntries[1] != null) {
             result.append("<spd>");
             if (SPDEntries[0] != null) {
                 result.append(SPDEntries[0]);
@@ -268,9 +263,6 @@ public class TemplateManager {
             result.append("</spd>");
         }
         result.append("</ipsec-ikeless>");
-
         return result.toString();
     }
-
 }
-
