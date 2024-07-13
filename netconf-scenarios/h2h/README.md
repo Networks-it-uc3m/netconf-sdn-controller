@@ -1,12 +1,15 @@
-##1
+## 1
+```shell
 docker-compose up
-
-##2
+```
+## 2
+```shell
 curl -X POST -H "content-type:application/json" \
 http://localhost:8181/onos/v1/network/configuration \
 -d @netconf-cfg.json --user onos:rocks
-
-##3
+```
+## 3
+```shell
 curl --location 'http://localhost:8181/onos/ccipstest-app/sample/edit-netconf' \
 -H "Content-Type: application/json" \
 -d '{
@@ -25,10 +28,14 @@ curl --location 'http://localhost:8181/onos/ccipstest-app/sample/edit-netconf' \
   "nTimeHard": "3000000",
   "nTimeIdleHard": "12000"
 }' --user onos:rocks
-
-##4
+```
+## 4
+```shell
 docker exec -it router-a bash
 tcpdump
-##5
+```
+## 5
+```shell
 docker exec -it router-b bash
 ping 172.20.0.2
+```
