@@ -1,0 +1,62 @@
+version: '3'
+
+# -- Redes del escenario -- #
+networks:
+  controller_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+  domainA_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+  domainB_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+
+
+# -- Contenedores del escenario -- #
+services:
+  # -- Interdomain (onos and routers)
+  onos-controller:
+    image: onos:latest
+    container_name: onos-controller
+    cap_add:
+      - NET_ADMIN
+    networks:
+      controller_net:
+        ipv4_address: 172.20.0.10
+    ports:
+      - "8181:8181"
+      - "6640:6640"
+      - "8101:8101"
+      - "6633:6633"
+      - "6653:6653"
+      - "9876:9876"
+  
+  router-a:
+    image: agent:latest
+    container_name: router-a
+    cap_add:
+      - ALL
+    networks:
+      controller_net:
+        ipv4_address: 172.20.0.2
+      #domainA_net:
+      #  ipv4_address: 192.168.0.2
+
+  router-b:
+    image: agent:latest
+    container_name: router-b
+    cap_add:
+      - ALL
+    networks:
+      controller_net:
+        ipv4_address: 172.20.0.3
+      #domainB_net:
+      #  ipv4_address: 192.168.1.3
+
