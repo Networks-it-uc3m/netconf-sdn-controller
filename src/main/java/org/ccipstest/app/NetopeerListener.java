@@ -16,7 +16,7 @@ public class NetopeerListener implements NetconfDeviceListener {
     @Override
     public void deviceAdded(DeviceId di){
 
-        log.info("\nDEVICE ADDED: " + di + "\n");
+        log.info("Device added : " + di);
         NetconfSession session = this.controller.getNetconfDevice(di).getSession();
         try {
             this.controller.getNetconfDevice(di).getSession().startSubscription();
@@ -36,6 +36,5 @@ public class NetopeerListener implements NetconfDeviceListener {
     public void deviceRemoved(DeviceId deviceId) {
 
     }
-
 
 }

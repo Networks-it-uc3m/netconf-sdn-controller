@@ -2,6 +2,8 @@ package org.ccipstest.app;
 
 
 import org.ccipstest.Templates.TemplateManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.util.HashMap;
@@ -25,6 +27,7 @@ public class IpsecConfig {
     private LifetimeConfig hardLifetime;
     private long timestamp;
     private Map<Long, Boolean> reKeysDone;
+    private static final Logger log = LoggerFactory.getLogger(IpsecConfig.class);
 
     public enum IPsecConfigType {
         // H2H Used for host to host configuration
@@ -57,49 +60,42 @@ public class IpsecConfig {
         this.reKeysDone = new HashMap<>();
         this.confType = configType;
         this.spi = SPIManager.getNewSPI();
-        this.name = String.format("out/%s/in/%s", node1.getIpData(), node2.getIpData());
 
         this.origin = node1.getIpControl();
         this.end = node2.getIpControl();
 
         if (this.confType == IPsecConfigType.G2G) {
-            // Setup internal networks
             this.prefixOrigin = node1.getNetworkInternal();
             this.prefixEnd = node2.getNetworkInternal();
+            this.name = String.format("out/%s(%s)/in/%s(%s)", node1.getIpData(),node1.getNetworkInternal(), node2.getIpData(),node2.getNetworkInternal());
+        }else{
+            this.name = String.format("out/%s/in/%s", node1.getIpData(), node2.getIpData());
         }
 
-        // Set data IPs
         this.dataOrigin = node1.getIpData();
         this.dataEnd = node2.getIpData();
 
-
-        //this.timestamp = Instant.now().getEpochSecond();
-
         this.reqId = id;
-        System.out.printf("Generated reqId is %d%n", this.reqId);
+        log.info("Generated reqId is {}", this.reqId);
 
-        // Setup crypto config
         this.cryptoConfig = cryptoCfg;
         this.cryptoConfig.setNewCryptoValues();
 
-        // Lifetime
         this.softLifetime = softLifetime;
         this.hardLifetime = hardLifetime;
     }
 
-    // Methods to create configurations
     public String createDelSAD() {
         return TemplateManager.formatDelSAD(this);
     }
+
     public String createDelSAD(long oldSPI) {
         return TemplateManager.formatDelSAD(this,oldSPI);
     }
 
-
     public String createDelSPD() {
         return TemplateManager.formatDelSPD(this);
     }
-
 
     public String[] createSADConfig() {
         String outCfg;
@@ -145,7 +141,6 @@ public class IpsecConfig {
 
     public void setNewSpi() {
         this.spi = SPIManager.getNewSPI();
-        this.name = String.format("out/%s/in/%s", this.getDataOrigin(), this.getDataEnd());
     }
 
     public long getReqId() {
@@ -191,7 +186,6 @@ public class IpsecConfig {
     public long getTimestamp() {
         return this.timestamp;
     }
-
 
     public Map<Long, Boolean> getReKeysDone() {
         return this.reKeysDone;

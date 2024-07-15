@@ -24,40 +24,43 @@ import java.util.concurrent.Semaphore;
 
 public class NetconfDeviceOutputEventListenerLifetime implements NetconfDeviceOutputEventListener {
     private final Logger log = LoggerFactory.getLogger(NetconfDeviceOutputEventListenerLifetime.class);
-    private static final Semaphore semaphore = new Semaphore(1); // Permite un acceso a la vez
+    private static final Semaphore semaphore = new Semaphore(1);
 
     @Override
     public void event(NetconfDeviceOutputEvent event) {
         new Thread(() -> {
             try {
-                semaphore.acquire();
-                processEvent(event);
+                String netconfMessage = event.getMessagePayload();
+
+                if (isRelevantNotification(netconfMessage)) {
+                    String ipsecSaName = extractIpsecSaName(netconfMessage);
+                    semaphore.acquire();
+                    try {
+                        processEvent(ipsecSaName);
+                    } finally {
+                        semaphore.release();
+                    }
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 log.error("Thread was interrupted", e);
-            } finally {
-                semaphore.release();
             }
         }).start();
     }
 
-    private void processEvent(NetconfDeviceOutputEvent event) {
+    private void processEvent(String ipsecSaName) {
         try {
-            String netconfMessage = event.getMessagePayload();
-
-            if (netconfMessage.contains("<soft-lifetime-expire>true</soft-lifetime-expire>")) {
-                log.info("Notification received :\n {}",XmlFormatter.formatXml(netconfMessage));
-                String ipsecSaName = extractIpsecSaName(netconfMessage);
-
-                if (ipsecSaName != null) {
-                    log.info("Soft lifetime expired for IPsec SA Name: {}", ipsecSaName);
-                    StorageHandler.rekey(ipsecSaName);
-                }
-            }
+            //log.info("Soft lifetime expired for IPsec SA Name: {}", ipsecSaName);
+            StorageHandler.rekey(ipsecSaName);
         } catch (Exception e) {
             log.error("Error processing NETCONF event", e);
         }
     }
+
+    private boolean isRelevantNotification(String notification) {
+        return notification.contains("<soft-lifetime-expire>true</soft-lifetime-expire>");
+    }
+
     public static String extractIpsecSaName(String notification) {
 
         String startTag = "<ipsec-sa-name>";
@@ -74,6 +77,7 @@ public class NetconfDeviceOutputEventListenerLifetime implements NetconfDeviceOu
 
         return null;
     }
+
 
 }
 

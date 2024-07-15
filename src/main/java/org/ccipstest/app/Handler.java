@@ -26,15 +26,10 @@ import org.onosproject.net.driver.DriverHandler;
 public class Handler {
     private static final Logger log = LoggerFactory.getLogger(Handler.class);
     private IpsecConfig[] configs =new IpsecConfig[2];
-
     private Map<String, OutIn> ids = new HashMap<>();
-
     private boolean isStopped=false;
 
-
     public Handler (NetconfSession newDeviceSession_1, NetconfSession newDeviceSession_2, IpsecConfig cfg1, IpsecConfig cfg2){
-
-
         this.ids.put(cfg1.getName(), new OutIn(cfg1, newDeviceSession_1, newDeviceSession_2 ,cfg1.getOrigin(),cfg1.getEnd()));
         this.ids.put(cfg2.getName(), new OutIn(cfg2, newDeviceSession_2, newDeviceSession_1,cfg2.getOrigin(),cfg2.getEnd()));
         this.configs[0]=cfg1;
@@ -42,7 +37,6 @@ public class Handler {
     }
 
     public static Handler newHandler(request request, long id, NetconfSession newDeviceSession_1, NetconfSession newDeviceSession_2) throws Exception {
-
         IpsecConfig.IPsecConfigType mode;
 
         if (request.getNode1().getNetworkInternal()==null) {
@@ -80,10 +74,6 @@ public class Handler {
                 id
         );
 
-        if (cfg1 == null) {
-            throw new Exception("Failed to create config 1");
-        }
-
         IpsecConfig cfg2 = new IpsecConfig(
                 request.getNode2(),
                 request.getNode1(),
@@ -94,10 +84,9 @@ public class Handler {
                 id
         );
 
-        if (cfg2 == null) {
-            throw new Exception("Failed to create config 2");
+        if ((cfg1 == null)||(cfg2 == null)) {
+            throw new Exception("Failed to create configurations");
         }
-
 
         return new Handler(newDeviceSession_1, newDeviceSession_2, cfg1, cfg2);
     }
@@ -107,27 +96,22 @@ public class Handler {
         String[] spd2 = new String[2];
         String[] sad1 = new String[2];
         String[] sad2 = new String[2];
-        String err;
 
-        // Set spd1 outbound and spd2 inbound
         String[] result1 = this.configs[0].createSPDConfig();
 
         spd1[0] = result1[0];
         spd2[0] = result1[1];
 
-        // Set spd2 outbound and spd1 inbound
         String[] result2 = this.configs[1].createSPDConfig();
 
         spd2[1] = result2[0];
         spd1[1] = result2[1];
 
-        // Set sad1 outbound and sad2 inbound
         String[] result3 = this.configs[0].createSADConfig();
 
         sad1[0] = result3[0];
         sad2[0] = result3[1];
 
-        // Set sad2 outbound and sad1 inbound
         String[] result4 = this.configs[1].createSADConfig();
 
         sad2[1] = result4[0];
@@ -135,88 +119,83 @@ public class Handler {
 
         log.info("Generated configuration values");
 
-        // Now format the data
         String s1DataIn = generateI2NSFConfig(new String[]{sad1[1],null}, spd1);
         String s2DataIn = generateI2NSFConfig (new String[]{sad2[0],null},spd2) ;
         String s1DataOut = generateI2NSFConfig(new String[]{sad1[0],null}, new String[]{null,null});
         String s2DataOut = generateI2NSFConfig(new String[]{sad2[1],null}, new String[]{null,null});
 
-        // This setup is necessary so no traffic is lost when the SA are established
-        // Setup first inbound configs
         try {
             newDeviceSession_1.editConfig(DatastoreId.datastore("running"), "merge", s1DataIn);
 
         } catch (NetconfException e) {
             log.error("Error setting s1DataIn config: {}", e.getMessage());
+            try {
+                newDeviceSession_1.editConfig(DatastoreId.datastore("running"), "merge", s1DataIn);
+                log.info("Second attempt to execute editConfig for s1DataIn succeeded");
+            } catch (NetconfException ex) {
+                log.error("Second attempt to execute editConfig for s1DataIn failed: {}", ex.getMessage());
+            }
             return false;
         }
 
         try {
             newDeviceSession_2.editConfig(DatastoreId.datastore("running"), "merge", s2DataIn);
-
         } catch (NetconfException e) {
             log.error("Error setting s2DataIn config: {}", e.getMessage());
+            try {
+                newDeviceSession_2.editConfig(DatastoreId.datastore("running"), "merge", s2DataIn);
+                log.info("Second attempt to execute editConfig for s2DataIn succeeded");
+            } catch (NetconfException ex) {
+                log.error("Second attempt to execute editConfig for s2DataIn failed: {}", ex.getMessage());
+            }
             return false;
         }
 
-        // Then setup outbounds configs
         try {
             newDeviceSession_1.editConfig(DatastoreId.datastore("running"), "merge", s1DataOut);
-
         } catch (NetconfException e) {
             log.error("Error setting s1DataOut config: {}", e.getMessage());
+            try {
+                newDeviceSession_1.editConfig(DatastoreId.datastore("running"), "merge", s1DataOut);
+                log.info("Second attempt to execute editConfig for s1DataOut succeeded");
+            } catch (NetconfException ex) {
+                log.error("Second attempt to execute editConfig for s1DataOut failed: {}", ex.getMessage());
+            }
             return false;
         }
 
         try {
             newDeviceSession_2.editConfig(DatastoreId.datastore("running"), "merge", s2DataOut);
-
         } catch (NetconfException e) {
             log.error("Error setting s2DataOut config: {}", e.getMessage());
+            try {
+                newDeviceSession_2.editConfig(DatastoreId.datastore("running"), "merge", s2DataOut);
+                log.info("Second attempt to execute editConfig for s2DataOut succeeded");
+            } catch (NetconfException ex) {
+                log.error("Second attempt to execute editConfig for s2DataOut failed: {}", ex.getMessage());
+            }
             return false;
         }
-
         return true;
     }
 
     public boolean processRekey(NetconfController controller, String name, long oldSPI) throws Exception {
-
-
-
-
-        String uri_device_1 = "netconf:" + this.ids.get(name).getS1_string() + ":830";
-        String uri_device_2 = "netconf:" + this.ids.get(name).getS2_string() + ":830";
-        DeviceId new_device_1 = DeviceId.deviceId(uri_device_1);
-        DeviceId new_device_2 = DeviceId.deviceId(uri_device_2);
-
-
-        NetconfSession newDeviceSession_1 = controller.getNetconfDevice(new_device_1).getSession();
-        NetconfSession newDeviceSession_2 = controller.getNetconfDevice(new_device_2).getSession();
-
-
-
-        this.ids.get(name).setS1(newDeviceSession_1);
-        this.ids.get(name).setS2(newDeviceSession_2);
-
         if (this.isStopped) {
             return false;
         }
 
+        log.info("Soft lifetime expired:\tReqId : " + this.ids.get(name).getCfg().getReqId() + "\t\tSPI:"+oldSPI+"\t\t\t\t"+name);
 
-        System.out.print("Received notification to proceed with rekey of " + name + oldSPI);
-
-        if (this.ids.get(name).getCfg().getReKeysDone().getOrDefault(oldSPI, false)) {//CUIDAOOOOOOO ESTE CAMBIO DE !
-            System.out.print("Rekey of spi:" + oldSPI + " has been already completed\n");
+        if (this.ids.get(name).getCfg().getReKeysDone().getOrDefault(oldSPI, false)) {
+            log.info("Rekey of spi: " + oldSPI + " has been already completed");
             return true;
         } else if (this.ids.get(name).getCfg().getSpi() != oldSPI) {
-            System.out.print("Configuration does not contain this SPI: " + oldSPI + "\n");
+            log.info("Configuration does not contain this SPI: " + oldSPI);
             return false;
         }
 
         this.ids.get(name).getCfg().getReKeysDone().put(oldSPI, true);
 
-
-        System.out.print("Timer for" + this.ids.get(name).getCfg().getName() + " has expired. Proceed to setup new SADs\n");
         String delSADXml = this.ids.get(name).getCfg().createDelSAD(oldSPI);
 
         this.ids.get(name).getCfg().getCryptoConfig().setNewCryptoValues();
@@ -225,177 +204,138 @@ public class Handler {
         String[] sadConfig = this.ids.get(name).getCfg().createSADConfig();
         String s1Data = generateI2NSFConfig(new String[]{sadConfig[0], null}, new String[]{null, null});
         String s2Data = generateI2NSFConfig(new String[]{sadConfig[1], null}, new String[]{null, null});
-
         String mode = "merge";
 
-
-
-        newDeviceSession_1.getConfig(DatastoreId.datastore("running"));
         try {
             this.ids.get(name).getS1().editConfig(DatastoreId.datastore("running"), mode, s1Data);
         } catch (NetconfException e) {
-            log.error("Failed editconfig s1Data");
+            log.error("Failed to execute editConfig for s1Data: {}",e.getMessage());
+            try {
+                this.ids.get(name).getS1().editConfig(DatastoreId.datastore("running"), mode, s1Data);
+                log.info("Second attempt to execute editConfig for s1Data succeeded");
+            } catch (NetconfException ex) {
+                log.error("Second attempt to execute editConfig for s1Data failed: {}", ex.getMessage());
+            }
         }
 
         try {
             this.ids.get(name).getS2().editConfig(DatastoreId.datastore("running"), mode, s2Data);
         } catch (NetconfException e) {
-            log.error("Failed editconfig s2Data");
+            log.error("Failed to execute editConfig for s2Data: {}",e.getMessage());
+            try {
+                this.ids.get(name).getS2().editConfig(DatastoreId.datastore("running"), mode, s2Data);
+                log.info("Second attempt to execute editConfig for s2Data succeeded");
+            } catch (NetconfException ex) {
+                log.error("Second attempt to execute editConfig for s2Data failed: {}", ex.getMessage());
+            }
         }
 
-        System.out.print("Deleting old entries out " + this.ids.get(name).getCfg().getOrigin() + " in " + this.ids.get(name).getCfg().getEnd() + " SPI " + oldSPI);
+        //log.info("Deleting old entries out " + this.ids.get(name).getCfg().getOrigin() + " in " + this.ids.get(name).getCfg().getEnd() + " SPI " + oldSPI);
 
         try {
             this.ids.get(name).getS1().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
         } catch (NetconfException e) {
-            log.error("Failed editconfig delSAD");
+            log.error("Failed to execute editConfig for delSAD: {}",e.getMessage());
+            try {
+                //this.ids.get(name).getS1().checkAndReestablish();
+                this.ids.get(name).getS1().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
+                log.info("Second attempt to execute editConfig for delSAD succeeded");
+            } catch (NetconfException ex) {
+                if (ex.getMessage().contains("Node \"sad-entry\" to be deleted does not exist.")) {
+                    log.warn("Agent deleted the SAD but reply not received: "+ex.getMessage());
+                } else {
+                    log.error("Second attempt to execute editConfig for delSAD failed: {}", ex.getMessage());
+                }
+            }
         }
 
         try {
             this.ids.get(name).getS2().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
         } catch (NetconfException e) {
-            log.error("Failed editconfig delSAD");
+            log.error("Failed to execute editConfig for delSAD: {}",e.getMessage());
+            try {
+                this.ids.get(name).getS2().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
+                log.info("Second attempt to execute editConfig for delSAD succeeded");
+            } catch (NetconfException ex) {
+                if (ex.getMessage().contains("Node \"sad-entry\" to be deleted does not exist.")) {
+                    log.warn("Agent deleted the SAD but reply not received: "+ex.getMessage());
+                } else {
+                    log.error("Second attempt to execute editConfig for delSAD failed: {}", ex.getMessage());
+                }
+            }
         }
 
-        System.out.print("Rekey process of " + this.ids.get(name).getCfg().getReqId() + " already completed");
-
-//        this.locker.writeLock().unlock();
+        log.info("Rekey process completed:\tReqId : " + this.ids.get(name).getCfg().getReqId() + "\t\toldSPI:"+oldSPI+" --> newSPI:"+this.ids.get(name).getCfg().getSpi()+"\t\t"+name);
 
         return true;
     }
 
+    public boolean stop() {
+        for (OutIn outIn : ids.values()) {
+            String delSADXml = outIn.getCfg().createDelSAD();
+            String delSPDXml = outIn.getCfg().createDelSPD();
+            String mode = "merge";
+            try {
+                outIn.getS1().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
+            } catch (Exception e) {
+                log.error("Error deleting SAD: {}", e.getMessage());
+            }
+            try {
+                outIn.getS2().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
+            } catch (Exception e) {
+                log.error("Error deleting SAD: {}", e.getMessage());
+            }
 
+            try {
+                outIn.getS1().editConfig(DatastoreId.datastore("running"), mode, delSPDXml);
+            } catch (Exception e) {
+                log.error("Error deleting SPD: {}", e.getMessage());
+            }
+            try {
+                outIn.getS2().editConfig(DatastoreId.datastore("running"), mode, delSPDXml);
+            } catch (Exception e) {
+                log.error("Error deleting SPD: {}", e.getMessage());
+            }
+        }
+        for (String key : new HashSet<>(ids.keySet())) {
+            ids.put(key + "_stopped", ids.remove(key));
+        }
+        this.setStopped(true);
+        return true;
+    }
 
+    public boolean delete() {
+        for (OutIn outIn : ids.values()) {
+            String delSADXml = outIn.getCfg().createDelSAD();
+            String delSPDXml = outIn.getCfg().createDelSPD();
+            String mode = "merge";
+            try {
+                outIn.getS1().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
+            } catch (Exception e) {
+                log.error("Error deleting SAD: {}", e.getMessage());
+            }
+            try {
+                outIn.getS2().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
+            } catch (Exception e) {
+                log.error("Error deleting SAD: {}", e.getMessage());
+            }
+            try {
+                outIn.getS1().editConfig(DatastoreId.datastore("running"), mode, delSPDXml);
+            } catch (Exception e) {
+                log.error("Error deleting SPD: {}", e.getMessage());
+            }
+            try {
+                outIn.getS2().editConfig(DatastoreId.datastore("running"), mode, delSPDXml);
+            } catch (Exception e) {
+                log.error("Error deleting SPD: {}", e.getMessage());
+            }
+        }
+        return true;
+    }
 
     public boolean keyExists(String key) {
-//        this.locker.readLock().lock();
-        try {
-            return ids.containsKey(key);
-        } finally {
-//            this.locker.readLock().unlock();
-        }
+        return ids.containsKey(key);
     }
-
-
-    public boolean stop() {
-
-        try {
-            ErrorManager log;
-            for (OutIn outIn : ids.values()) {
-                // Generate del SADs
-                String delSADXml = outIn.getCfg().createDelSAD();
-
-                // Generate del SPDs
-                String delSPDXml = outIn.getCfg().createDelSPD();
-                String mode="merge";
-
-                // Delete SADs
-                // First delete the outbound configs
-                // Then delete the inbound configs
-                try {
-                    outIn.getS1().editConfig(DatastoreId.datastore("running"),mode,delSADXml);
-                } catch (Exception e) {
-                    System.out.print("Error");
-                }
-                try {
-                    outIn.getS2().editConfig(DatastoreId.datastore("running"),mode,delSADXml);
-                } catch (Exception e) {
-                    System.out.print("Error");
-                }
-
-                // Delete SPDs
-                try {
-                    outIn.getS1().editConfig(DatastoreId.datastore("running"),mode,delSPDXml);
-                } catch (Exception e) {
-                    System.out.print("Error");
-                }
-                try {
-                    outIn.getS2().editConfig(DatastoreId.datastore("running"),mode,delSPDXml);
-                } catch (Exception e) {
-                    System.out.print("Error");
-                }
-
-            }
-            for (String key : new HashSet<>(ids.keySet())) {
-                ids.put(key + "_stopped", ids.remove(key));
-            }
-
-
-            isStopped = true;
-//            for (NetconfSession s : sessions) {
-//                //
-//                try {
-//                    s.close();
-//                } catch (Exception e) {
-//                    log.error(e.getMessage());
-//                }
-//            }
-
-            return true;
-        } finally {
-//            this.locker.writeLock().unlock();
-        }
-    }
-
-    public boolean stop2() {
-
-        try {
-            ErrorManager log;
-            for (OutIn outIn : ids.values()) {
-                // Generate del SADs
-                String delSADXml = outIn.getCfg().createDelSAD();
-
-                // Generate del SPDs
-                String delSPDXml = outIn.getCfg().createDelSPD();
-                String mode="merge";
-
-                // Delete SADs
-                // First delete the outbound configs
-                // Then delete the inbound configs
-                try {
-                    outIn.getS1().editConfig(DatastoreId.datastore("running"),mode,delSADXml);
-                } catch (Exception e) {
-                    System.out.print("Error");
-                }
-                try {
-                    outIn.getS2().editConfig(DatastoreId.datastore("running"),mode,delSADXml);
-                } catch (Exception e) {
-                    System.out.print("Error");
-                }
-
-                // Delete SPDs
-                try {
-                    outIn.getS1().editConfig(DatastoreId.datastore("running"),mode,delSPDXml);
-                } catch (Exception e) {
-                    System.out.print("Error");
-                }
-                try {
-                    outIn.getS2().editConfig(DatastoreId.datastore("running"),mode,delSPDXml);
-                } catch (Exception e) {
-                    System.out.print("Error");
-                }
-
-            }
-
-
-            isStopped = true;
-//            for (NetconfSession s : sessions) {
-//                //
-//                try {
-//                    s.close();
-//                } catch (Exception e) {
-//                    log.error(e.getMessage());
-//                }
-//            }
-
-            return true;
-        } finally {
-//            this.locker.writeLock().unlock();
-        }
-    }
-
-    // Placeholder for the editConfig method
-
 
     public boolean isStopped() {
         return this.isStopped;
@@ -405,13 +345,7 @@ public class Handler {
         this.isStopped = stopped;
     }
 
-    //    @Override
-//    public String toString() {
-//        return "Handler{" +
-//                "isStopped=" + isStopped +
-//                ", ids=" + ids +
-//                "}\n";
-//    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

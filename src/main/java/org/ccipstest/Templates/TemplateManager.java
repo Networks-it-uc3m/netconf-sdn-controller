@@ -12,6 +12,17 @@ public class TemplateManager {
     private static final String INNER_PROTOCOL_ANY = "<inner-protocol>any</inner-protocol>";
     private static final String ACTION_PROTECT = "<action>protect</action>";
 
+    public static String byteArrayToHexString(byte[] byteArray) {
+        StringBuilder hexString = new StringBuilder();
+        for (int i = 0; i < byteArray.length; i++) {
+            hexString.append(String.format("%02X", byteArray[i]));
+            if (i < byteArray.length - 1) {
+                hexString.append(":");
+            }
+        }
+        return hexString.toString();
+    }
+
     public static String formatG2GSADValues(IpsecConfig config, String localPrefix, String remotePrefix, String local, String remote) {
         return new StringBuilder()
                 .append("<sad-entry>")
@@ -149,17 +160,6 @@ public class TemplateManager {
                 .toString();
     }
 
-    public static String byteArrayToHexString(byte[] byteArray) {
-        StringBuilder hexString = new StringBuilder();
-        for (int i = 0; i < byteArray.length; i++) {
-            hexString.append(String.format("%02X", byteArray[i]));
-            if (i < byteArray.length - 1) {
-                hexString.append(":");
-            }
-        }
-        return hexString.toString();
-    }
-
     public static String formatH2HSPDValues(IpsecConfig config, String localPrefix, String remotePrefix, String direction) {
         return new StringBuilder()
                 .append("<spd-entry>")
@@ -265,4 +265,5 @@ public class TemplateManager {
         result.append("</ipsec-ikeless>");
         return result.toString();
     }
+
 }

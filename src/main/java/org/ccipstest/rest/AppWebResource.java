@@ -58,12 +58,29 @@ public class AppWebResource extends AbstractWebResource {
     }
 
     @POST
+    @Path("get-config")
+    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
+    public Response getConfig(RequestGetConfigDTO req) throws Exception {
+        String netconfMessage;
+        String netconfMessageXml;
+        try {
+            req.validateIPs();
+            String uri_device = "netconf:"+req.getIp()+":830";
+            DeviceId new_device = DeviceId.deviceId(uri_device);
+            NetconfSession newDeviceSession = StorageHandler.controller.getNetconfDevice(new_device).getSession();
+            netconfMessage = newDeviceSession.getConfig(DatastoreId.datastore("running"));
+            netconfMessageXml=XmlFormatter.formatXml(netconfMessage);
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error getting config: " + e.getMessage() + "\n").build();
+        }
+        return Response.ok(netconfMessageXml).build();
+    }
+
+    @POST
     @Path("storage")
     public Response Storage() throws Exception {
         log.info(StorageHandler.storage.toString());
-
         return Response.ok().build();
-
     }
 
     @POST
@@ -130,6 +147,30 @@ public class AppWebResource extends AbstractWebResource {
         public void setName(String name) {
             this.name = name;
         }
+    }
+
+    public static class RequestGetConfigDTO {
+        private static final Pattern IP_PATTERN = Pattern.compile(
+                "^(([0-9]{1,3}\\.){3}[0-9]{1,3})$");
+        String ip;
+
+        public String getIp() {
+            return ip;
+        }
+
+        public void setIp(String ip) {
+            this.ip = ip;
+        }
+
+        private void validateIPs() throws Exception {
+            if (!isIPValid(ip)) throw new Exception("Invalid ip format");
+        }
+
+        private boolean isIPValid(String ip) {
+            return ip != null && IP_PATTERN.matcher(ip).matches();
+        }
+
+
     }
 
     public static class RequestDTO {

@@ -149,7 +149,7 @@ for i in range(1, agents_count + 1):
                     "username": "netconf",
                     "password": "netconf",
                     "connect-timeout": 20,
-                    "reply-timeout": 25
+                    "reply-timeout": 3
                 },
                 "basic": {
                     "driver": "netconf"
