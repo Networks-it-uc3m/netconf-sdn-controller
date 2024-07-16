@@ -10,13 +10,15 @@ import org.onosproject.cli.AbstractShellCommand;
 @Service
 @Command(scope = "onos", name = "delete-handler", description = "Delete handler by ID")
 public class DeleteHandlerCommand extends AbstractShellCommand {
+    @Argument(index = 0, name = "name", description = "Tunnel name", required = false, multiValued = false)
+    String name = null;
     @Argument(index = 0, name = "reqId", description = "Request ID", required = true, multiValued = false)
-    long reqId;
+    String reqId = null;
 
     @Override
     protected void doExecute() throws Exception {
         try {
-            StorageHandler.deleteHandler(reqId);
+            StorageHandler.deleteHandler(name, reqId);
             print("Handler deleted successfully.");
         } catch (Exception e) {
             print("Error deleting handler: " + e.getMessage());

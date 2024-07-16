@@ -91,7 +91,7 @@ public class StorageHandler {
                     }
                     handler = storage.get(reqId_aux);
                 } else {
-                    throw new Exception("RequestDeleteDTO must contain either reqId or name");
+                    throw new Exception("Request must contain either reqId or name");
                 }
 
                 if (handler.isStopped()) {
@@ -112,17 +112,31 @@ public class StorageHandler {
         }
     }
 
-    public static void deleteHandler(long id) throws Exception {
+    public static void deleteHandler(String name, String reqId) throws Exception {
+        Long reqId_aux;
         synchronized (lock) {
             try {
-                Handler handler = storage.get(id);
-                if (handler == null) {
-                    throw new Exception(String.format("Handler with id %s, does not exist", id));
+
+                Handler handler;
+                if (reqId != null) {
+                    reqId_aux=Long.parseLong(reqId);
+                    handler = storage.get(reqId_aux);
+                    if (handler == null) {
+                        throw new Exception(String.format("Handler with id %s does not exist", reqId));
+                    }
+                } else if (name != null) {
+                    reqId_aux = findHandlerKeyContaining(name);
+                    if (reqId_aux == null) {
+                        throw new Exception(String.format("Handler with name %s does not exist", name));
+                    }
+                    handler = storage.get(reqId_aux);
+                } else {
+                    throw new Exception("Request must contain either reqId or name");
                 }
                 if (!handler.delete()) {
-                    throw new Exception("Error stopping handler");
-                } else {
-                    storage.remove(id);
+                    throw new Exception("Error deleting handler");
+                } else{
+                    storage.remove(reqId_aux);
                 }
             } catch (Exception e) {
                 log.error("Exception occurred while deleting handler: {}", e.getMessage());

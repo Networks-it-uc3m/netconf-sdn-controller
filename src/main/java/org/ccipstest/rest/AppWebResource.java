@@ -58,9 +58,9 @@ public class AppWebResource extends AbstractWebResource {
     }
 
     @POST
-    @Path("get-config")
+    @Path("get-config-node")
     @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
-    public Response getConfig(RequestGetConfigDTO req) throws Exception {
+    public Response getConfigNode(RequestGetConfigDTO req) throws Exception {
         String netconfMessage;
         String netconfMessageXml;
         try {
@@ -77,6 +77,23 @@ public class AppWebResource extends AbstractWebResource {
     }
 
     @POST
+    @Path("get-config-ipsec")
+    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
+    public Response getConfigIpsec(RequestReqidSpiDTO req) throws Exception {
+        try {
+            req.validate();
+            Handler response = null;
+            response = StorageHandler.storage.get(Long.parseLong(req.getReqId()));
+            if(response==null){
+                throw new Exception("Handler with reqId : " + req.getReqId() + " does not exist");
+            }
+            return Response.status(Response.Status.OK).entity(response.toString()).build();
+        }catch (Exception e){
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error getting tunnel information: "+e.getMessage()+"\n").build();
+        }
+    }
+
+    @POST
     @Path("storage")
     public Response Storage() throws Exception {
         log.info(StorageHandler.storage.toString());
@@ -86,21 +103,23 @@ public class AppWebResource extends AbstractWebResource {
     @POST
     @Path("stop")
     @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
-    public Response stop(RequestDeleteDTO request_del) throws Exception {
+    public Response stop(RequestReqidSpiDTO request_stop) throws Exception {
         try {
-        StorageHandler.stopTunnel(request_del.getName(), request_del.getReqId());
-        return Response.ok().build();
+            request_stop.validate();
+            StorageHandler.stopTunnel(request_stop.getName(), request_stop.getReqId());
+            return Response.ok().build();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error stopping tunnel"+e.getMessage()+"\n").build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error stopping tunnel" + e.getMessage() + "\n").build();
         }
     }
 
     @POST
     @Path("del")
     @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
-    public Response del(RequestDeleteDTO request_del) throws Exception {
+    public Response del(RequestReqidSpiDTO request_del) throws Exception {
         try {
-            StorageHandler.deleteHandler(Long.parseLong(request_del.getReqId()));
+            request_del.validate();
+            StorageHandler.deleteHandler(request_del.getName(),request_del.getReqId());
             return Response.ok().build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error deleting handler"+e.getMessage()+"\n").build();
@@ -128,7 +147,7 @@ public class AppWebResource extends AbstractWebResource {
         }
     }
 
-    public static class RequestDeleteDTO {
+    public static class RequestReqidSpiDTO {
         String reqId;
         String name;
 
@@ -146,6 +165,18 @@ public class AppWebResource extends AbstractWebResource {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        private void validate() throws Exception {
+            if (!isNonNegativeNumber(reqId)) throw new Exception("Invalid reqId");
+        }
+
+        private boolean isNonNegativeNumber(String value) {
+            try {
+                return Long.parseLong(value) > 0; //0 is not valid
+            } catch (NumberFormatException e) {
+                return false;
+            }
         }
     }
 
@@ -396,22 +427,5 @@ public class AppWebResource extends AbstractWebResource {
         }
     }
 
-    public static class SampleDTO {
-        public String hello;
 
-        public String getHello() {
-            return hello;
-        }
-
-        public void setHello(String hello) {
-            this.hello = hello;
-        }
-
-        @Override
-        public String toString() {
-            return "SampleDTO{" +
-                    "hello='" + hello + '\'' +
-                    '}';
-        }
-    }
 }
