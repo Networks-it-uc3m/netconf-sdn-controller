@@ -95,9 +95,7 @@ http://localhost:8181/onos/v1/network/configuration \
 ```
 
 
-## H2H
-
-### Create tunnel
+### Create tunnel H2H
 ```bash
 curl --location 'http://localhost:8181/onos/ccipstest-app/sample/edit-netconf' \
 -H "Content-Type: application/json" \
@@ -119,17 +117,57 @@ curl --location 'http://localhost:8181/onos/ccipstest-app/sample/edit-netconf' \
 }' --user onos:rocks
 ```
 
+### Create tunnel G2G
+```bash
+curl --location 'http://localhost:8181/onos/ccipstest-app/sample/edit-netconf' \
+-H "Content-Type: application/json" \
+-d '{
+  "ipData1": "172.20.0.2",
+  "ipControl1": "172.20.0.2",
+  "ipData2": "172.20.0.3",
+  "ipControl2": "172.20.0.3",
+  "encAlg": "des-cbc",
+  "intalg": "md5",
+  "nBytesSoft": "1000000",
+  "nPacketsSoft": "10000",
+  "nTimeSoft": "30",
+  "nTimeIdleSoft": "100000",
+  "nBytesHard": "20000000000",
+  "nPacketsHard": "200000000",
+  "nTimeHard": "3000000",
+  "nTimeIdleHard": "12000"
+}' --user onos:rocks
+```
+
+
 ### Delete Ipsec SA
 ```bash
 curl --location 'http://localhost:8181/onos/ccipstest-app/sample/del' -H "Content-Type: application/json" -d '{"reqId":"1"}' --user onos:rocks
 curl --location 'http://localhost:8181/onos/ccipstest-app/sample/del' -H "Content-Type: application/json" -d '{"name":"out/172.20.0.2/in/172.20.0.3"}' --user onos:rocks
+```
 
+### Stop Ipsec SA
+```bash
+curl --location 'http://localhost:8181/onos/ccipstest-app/sample/stop' -H "Content-Type: application/json" -d '{"reqId":"1"}' --user onos:rocks
+curl --location 'http://localhost:8181/onos/ccipstest-app/sample/stop' -H "Content-Type: application/json" -d '{"name":"out/172.20.0.2/in/172.20.0.3"}' --user onos:rocks
 ```
 
 ### Check stored configurations
 ```bash
 curl -X POST 'http://localhost:8181/onos/ccipstest-app/sample/storage' --user onos:rocks
 ```
+
+### Check ipsec SA configuration
+```bash
+curl --location 'http://localhost:8181/onos/ccipstest-app/sample/get-config-ipsec' -H "Content-Type: application/json" -d '{"reqId":"1"}' --user onos:rocks
+curl --location 'http://localhost:8181/onos/ccipstest-app/sample/get-config-ipsec' -H "Content-Type: application/json" -d '{"name":"out/172.20.0.2/in/172.20.0.3"}' --user onos:rocks
+```
+
+### Get config
+```bash
+curl --location 'http://localhost:8181/onos/ccipstest-app/sample/get-config-node' -H "Content-Type: application/json" -d '{"ip":"172.20.0.2"}' --user onos:rocks
+```
+
 # Tunnel Test
 
 ### Test connectivity between agents
