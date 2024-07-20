@@ -28,10 +28,7 @@ import org.onosproject.rest.AbstractWebResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -42,19 +39,62 @@ import java.util.regex.Pattern;
  * Sample web resource.
  */
 
-@Path("sample")
+@Path("ccips")
 public class AppWebResource extends AbstractWebResource {
     private final Logger log = LoggerFactory.getLogger(getClass());
-    /**
-     * Get hello world greeting.
-     *
-     * @return 200 OK
-     */
+
+    @POST
+    @Path("")
+    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
+    public Response createIpsecConfig(RequestDTO reqdto) throws Exception {
+        try {
+            reqdto.validate();
+            request req = RequestDTO.transformToRequest(reqdto);
+            String uri_device_1 = "netconf:" + req.getNodes()[0].getIpControl() + ":830";
+            String uri_device_2 = "netconf:" + req.getNodes()[1].getIpControl() + ":830";
+            DeviceId new_device_1 = DeviceId.deviceId(uri_device_1);
+            DeviceId new_device_2 = DeviceId.deviceId(uri_device_2);
+            NetconfSession newDeviceSession_1 = StorageHandler.controller.getNetconfDevice(new_device_1).getSession();
+            NetconfSession newDeviceSession_2 = StorageHandler.controller.getNetconfDevice(new_device_2).getSession();
+            StorageHandler.createHandler(req, newDeviceSession_1, newDeviceSession_2);
+            return Response.ok().build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error editing Netconf config: "+e.getMessage()+"\n").build();
+        }
+    }
+
+    @GET
+    @Path("/{id}")
+    public Response getIpsecConfig(@PathParam("id") String id) throws Exception {
+        try {
+            Handler response = null;
+            response = StorageHandler.storage.get(Long.parseLong(id));
+            if(response==null){
+                throw new Exception("Handler with reqId : " + id + " does not exist");
+            }
+            return Response.status(Response.Status.OK).entity(response.toString()).build();
+        }catch (Exception e){
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error getting tunnel information: "+e.getMessage()+"\n").build();
+        }
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public Response deleteIpsecConfig(@PathParam("id") String id) throws Exception {
+        try {
+            StorageHandler.deleteHandler(null,id);
+            return Response.ok().build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error deleting handler : "+e.getMessage()+"\n").build();
+        }
+
+    }
+
     @GET
     @Path("")
-    public Response getGreeting() {
-        ObjectNode node = mapper().createObjectNode().put("hello", "world");
-        return ok(node).build();
+    public Response getAllIpsecConfigs() throws Exception {
+        log.info(StorageHandler.storage.toString());
+        return Response.status(Response.Status.OK).entity(StorageHandler.storage.toString()).build();
     }
 
     @POST
@@ -77,30 +117,6 @@ public class AppWebResource extends AbstractWebResource {
     }
 
     @POST
-    @Path("get-config-ipsec")
-    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
-    public Response getConfigIpsec(RequestReqidSpiDTO req) throws Exception {
-        try {
-            req.validate();
-            Handler response = null;
-            response = StorageHandler.storage.get(Long.parseLong(req.getReqId()));
-            if(response==null){
-                throw new Exception("Handler with reqId : " + req.getReqId() + " does not exist");
-            }
-            return Response.status(Response.Status.OK).entity(response.toString()).build();
-        }catch (Exception e){
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error getting tunnel information: "+e.getMessage()+"\n").build();
-        }
-    }
-
-    @POST
-    @Path("storage")
-    public Response Storage() throws Exception {
-        log.info(StorageHandler.storage.toString());
-        return Response.ok().build();
-    }
-
-    @POST
     @Path("stop")
     @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
     public Response stop(RequestReqidSpiDTO request_stop) throws Exception {
@@ -110,40 +126,6 @@ public class AppWebResource extends AbstractWebResource {
             return Response.ok().build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error stopping tunnel" + e.getMessage() + "\n").build();
-        }
-    }
-
-    @POST
-    @Path("del")
-    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
-    public Response del(RequestReqidSpiDTO request_del) throws Exception {
-        try {
-            request_del.validate();
-            StorageHandler.deleteHandler(request_del.getName(),request_del.getReqId());
-            return Response.ok().build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error deleting handler"+e.getMessage()+"\n").build();
-        }
-
-    }
-
-    @POST
-    @Path("edit-netconf")
-    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
-    public Response editNetconfConfig(RequestDTO reqdto) throws Exception {
-        try {
-            reqdto.validate();
-            request req = RequestDTO.transformToRequest(reqdto);
-            String uri_device_1 = "netconf:" + req.getNodes()[0].getIpControl() + ":830";
-            String uri_device_2 = "netconf:" + req.getNodes()[1].getIpControl() + ":830";
-            DeviceId new_device_1 = DeviceId.deviceId(uri_device_1);
-            DeviceId new_device_2 = DeviceId.deviceId(uri_device_2);
-            NetconfSession newDeviceSession_1 = StorageHandler.controller.getNetconfDevice(new_device_1).getSession();
-            NetconfSession newDeviceSession_2 = StorageHandler.controller.getNetconfDevice(new_device_2).getSession();
-            StorageHandler.createHandler(req, newDeviceSession_1, newDeviceSession_2);
-            return Response.ok().build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error editing Netconf config: "+e.getMessage()+"\n").build();
         }
     }
 
