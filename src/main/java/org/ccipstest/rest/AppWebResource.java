@@ -34,6 +34,8 @@ import javax.ws.rs.core.Response;
 
 
 import static org.slf4j.LoggerFactory.getLogger;
+
+import java.util.UUID;
 import java.util.regex.Pattern;
 /**
  * Sample web resource.
@@ -128,6 +130,42 @@ public class AppWebResource extends AbstractWebResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error stopping tunnel" + e.getMessage() + "\n").build();
         }
     }
+
+    @POST
+    @Path("/certificate")
+    @Consumes({ "application/yaml", MediaType.APPLICATION_JSON })
+    public Response createCertificate(String certificate) throws Exception {
+
+        CertificateStore.storeCertificate(certificate);
+        return Response.ok().build();
+    }
+
+    @GET
+    @Path("/certificate/{id}")
+    public Response getCertificate(@PathParam("id") String id) throws Exception {
+        UUID certID;
+        try {
+            certID = UUID.fromString(id);
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid UUID").build();
+        }
+
+        String certificate = CertificateStore.getCertificate(certID);
+
+        if (certificate == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Certificate not found").build();
+        }
+
+        return Response.ok(certificate, MediaType.APPLICATION_JSON).build();
+    }
+
+    @GET
+    @Path("/certificate")
+    public Response getAllCertificates() throws Exception {
+        return Response.status(Response.Status.OK).entity(CertificateStore.certs.toString()).build();
+    }
+
+    
 
     public static class RequestReqidSpiDTO {
         String reqId;

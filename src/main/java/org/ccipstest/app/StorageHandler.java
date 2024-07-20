@@ -11,6 +11,7 @@ import java.util.Random;
 
 public class StorageHandler {
     public static Map<Long, Handler> storage = new HashMap<>();
+    public static Map<Long, Handler> certificates = new HashMap<>();
     private static final Logger log = LoggerFactory.getLogger(StorageHandler.class);
     private static final Object lock = new Object();
     private static final Random random = new Random();
