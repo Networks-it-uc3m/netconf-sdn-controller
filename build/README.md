@@ -165,7 +165,7 @@ curl --location 'http://localhost:8181/onos/ccipstest-app/sample/stop' -H "Conte
 curl --location 'http://localhost:8181/onos/ccipstest-app/sample/get-config-node' -H "Content-Type: application/json" -d '{"ip":"172.20.0.2"}' --user onos:rocks
 ```
 
-##Certificates
+## Certificates
 
 ### Upload new certificate
 ```bash
