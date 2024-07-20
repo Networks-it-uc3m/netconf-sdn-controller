@@ -1,0 +1,25 @@
+[package]
+name = "enarx"
+version = "0.1.0"
+edition = "2021"
+build="build.rs"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+
+[build-dependencies]
+cmake = "0.1.31"
+bindgen = "0.54.0"
+
+[dependencies]
+cc = "1.0.78"
+cmake = "0.1.31"
+libc = "0.2.139"
+wasm-bindgen = "0.2"
+
+[package.metadata.build]
+rustc-flags = ["-C", "always-run-compiler"]
+
+[target.'cfg(any(unix, target_os="wasi"))'.dependencies]
+env_logger = { version = "0.9.0", default-features = false }
+mio = { version = "0.8.3", features = ["os-poll", "net"], default-features = false }

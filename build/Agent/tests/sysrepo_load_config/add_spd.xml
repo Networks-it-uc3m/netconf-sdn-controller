@@ -1,0 +1,61 @@
+<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+<ipsec-ikeless
+  xmlns="urn:ietf:params:xml:ns:yang:ietf-i2nsf-ikeless"
+  xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+	<spd>
+		<spd-entry>
+			<!-- Removed priority -->
+			<!-- Names (array) to name -->
+			<name>out/192.168.201.254/192.168.202.254</name>
+			<!-- THIS WAS Under traffic-selector list -->
+			<direction>inbound</direction>
+			<!-- <rule-number>11</rule-number> -->
+			<reqid>12</reqid>
+			<ipsec-policy-config>
+			<anti-replay-window-size>32</anti-replay-window-size>
+			<!-- traffic-selector-list now is traffic-selector -->
+				<traffic-selector>
+					<!-- local-addresses -->
+					<local-prefix>192.168.201.0/24</local-prefix>  
+					<!-- <remote-addresses> -->
+					<remote-prefix>192.168.202.0/24</remote-prefix>
+					<!-- ???? -->
+					<inner-protocol>any</inner-protocol>
+				</traffic-selector>
+				<processing-info>
+					<!-- This is equal -->
+					<action>protect</action>
+					<ipsec-sa-cfg>
+						<!-- Fixed value -->
+						<ext-seq-num>true</ext-seq-num>
+						<!-- Fixed value -->
+						<seq-overflow>false</seq-overflow>
+						<!-- mode -->
+						<mode>tunnel</mode>
+						<!-- security-protocol -->
+						<protocol-parameters>esp</protocol-parameters>
+						<esp-algorithms>
+							<!-- TODO make this compatible with current framework -->
+							<!--AUTH_HMAC_SHA1_96-->
+							<integrity>2</integrity>
+							<!--ENCR_AES_CBC -->
+							<!-- In the RFC it is setup two algorithms, why? -->
+							<encryption>
+								<id>1</id>
+								<algorithm-type>3</algorithm-type>
+								<!-- TODO this is not implemented in the current schema. -->
+								<key-length>128</key-length>
+							</encryption>
+						</esp-algorithms>
+						<!-- This is not presented in the RFC example, why? -->
+						<tunnel>
+          					<local>192.168.123.100</local>
+          					<remote>192.168.123.200</remote>
+        				</tunnel>
+					</ipsec-sa-cfg>
+				</processing-info>
+			</ipsec-policy-config>
+		</spd-entry>
+	</spd>
+</ipsec-ikeless>
+</config>

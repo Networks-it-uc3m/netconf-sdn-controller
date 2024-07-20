@@ -1,0 +1,34 @@
+version: '3'
+services:
+  agentespirs1:
+    image: agentespirs
+    container_name: agentspirs1
+    cap_add:
+      - ALL
+    networks:
+      - network1
+      - custom_bridge
+    stdin_open: true
+    tty: true
+
+
+  agentespirs2:
+    image: agentespirs
+    container_name: agentspirs2
+    cap_add:
+      - ALL
+    networks:
+      - network2
+      - custom_bridge
+    stdin_open: true
+    tty: true
+
+
+networks:
+  network1:
+    external: true
+  network2:
+    external: true
+  custom_bridge:
+    external: true
+
