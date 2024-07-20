@@ -179,7 +179,7 @@ curl -X GET http://localhost:8181/onos/ccips/certificate/{Certificate_UUID} --us
 
 ### Check All Certificates
 ```bash
-curl -X GET http://localhost:8181/onos/ccips --user onos:rocks
+curl -X GET http://localhost:8181/onos/ccips/certificate --user onos:rocks
 ```
 
 
