@@ -165,7 +165,7 @@ curl --location 'http://localhost:8181/onos/ccipstest-app/sample/stop' -H "Conte
 curl --location 'http://localhost:8181/onos/ccipstest-app/sample/get-config-node' -H "Content-Type: application/json" -d '{"ip":"172.20.0.2"}' --user onos:rocks
 ```
 
-##Certificates
+## Certificates
 
 ### Upload new certificate
 ```bash
@@ -179,7 +179,7 @@ curl -X GET http://localhost:8181/onos/ccips/certificate/{Certificate_UUID} --us
 
 ### Check All Certificates
 ```bash
-curl -X GET http://localhost:8181/onos/ccips --user onos:rocks
+curl -X GET http://localhost:8181/onos/ccips/certificate --user onos:rocks
 ```
 
 
