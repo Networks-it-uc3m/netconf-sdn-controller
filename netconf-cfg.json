@@ -1,0 +1,30 @@
+{
+  "devices": {
+    "netconf:172.20.0.3:830": {
+      "netconf": {
+        "ip": "172.20.0.3",
+        "port": 830,
+        "username": "netconf",
+        "password": "netconf",
+        "connect-timeout": 20,
+        "reply-timeout": 3
+      },
+      "basic": {
+        "driver": "netconf"
+      }
+    },
+    "netconf:172.20.0.2:830": {
+      "netconf": {
+        "ip": "172.20.0.2",
+        "port": 830,
+        "username": "netconf",
+        "password": "netconf",
+        "connect-timeout": 20,
+        "reply-timeout": 3
+      },
+      "basic": {
+        "driver": "netconf"
+      }
+    }
+  }
+}

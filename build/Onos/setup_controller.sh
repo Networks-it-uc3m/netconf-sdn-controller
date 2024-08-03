@@ -26,7 +26,7 @@ done
 
 ./bin/onos-app localhost activate org.onosproject.netconf
 ./bin/onos-app localhost activate org.onosproject.drivers.netconf
-./bin/onos-app localhost install! ccipstest-app-1.0.0.oar
+./bin/onos-app localhost install! ccips-app-1.0.0.oar
 
 # now we bring the server into the foreground
 fg %1
