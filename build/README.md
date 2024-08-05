@@ -114,7 +114,7 @@ curl -X POST http://localhost:8181/onos/ccips \
   "nPacketsHard": "200000000",
   "nTimeHard": "3000000",
   "nTimeIdleHard": "12000"
-}' --user onos:rocks
+}' -w "\n%{http_code}\n" --user onos:rocks
 ```
 
 ### Create tunnel G2G
@@ -136,50 +136,41 @@ curl -X POST http://localhost:8181/onos/ccips \
   "nPacketsHard": "200000000",
   "nTimeHard": "3000000",
   "nTimeIdleHard": "12000"
-}' --user onos:rocks
+}' -w "\n%{http_code}\n" --user onos:rocks
 ```
 
 ### Check ipsec SA configuration
 ```bash
-curl -X GET http://localhost:8181/onos/ccips/{reqId} --user onos:rocks
+curl -X GET http://localhost:8181/onos/ccips/{reqId} -w "\n%{http_code}\n" --user onos:rocks
 ```
 
 ### Delete Ipsec SA
 ```bash
-curl -X DELETE http://localhost:8181/onos/ccips/{reqId} --user onos:rocks
+curl -X DELETE http://localhost:8181/onos/ccips/{reqId} -w "\n%{http_code}\n" --user onos:rocks
 ```
 
 ### Check stored configurations
 ```bash
-curl -X GET http://localhost:8181/onos/ccips --user onos:rocks
+curl -X GET http://localhost:8181/onos/ccips -w "\n%{http_code}\n" --user onos:rocks
 ```
 
-### Stop Ipsec SA
-```bash
-curl --location 'http://localhost:8181/onos/ccipstest-app/sample/stop' -H "Content-Type: application/json" -d '{"reqId":"1"}' --user onos:rocks
-curl --location 'http://localhost:8181/onos/ccipstest-app/sample/stop' -H "Content-Type: application/json" -d '{"name":"out/172.20.0.2/in/172.20.0.3"}' --user onos:rocks
-```
-
-### Get config
-```bash
-curl --location 'http://localhost:8181/onos/ccipstest-app/sample/get-config-node' -H "Content-Type: application/json" -d '{"ip":"172.20.0.2"}' --user onos:rocks
 ```
 
 ## Certificates
 
 ### Upload new certificate
 ```bash
-curl -X POST http://localhost:8181/onos/ccips/certificate -H "content-type:application/json" -d @{Certificate_file} --user onos:rocks
+curl -X POST http://localhost:8181/onos/ccips/certificate -H "content-type:application/json" -d @{Certificate_file} -w "\n%{http_code}\n" --user onos:rocks
 ```
 
 ### Check Certificate
 ```bash
-curl -X GET http://localhost:8181/onos/ccips/certificate/{Certificate_UUID} --user onos:rocks
+curl -X GET http://localhost:8181/onos/ccips/certificate/{Certificate_UUID} -w "\n%{http_code}\n" --user onos:rocks
 ```
 
 ### Check All Certificates
 ```bash
-curl -X GET http://localhost:8181/onos/ccips/certificate --user onos:rocks
+curl -X GET http://localhost:8181/onos/ccips/certificate -w "\n%{http_code}\n" --user onos:rocks
 ```
 
 

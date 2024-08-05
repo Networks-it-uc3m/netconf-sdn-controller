@@ -50,7 +50,6 @@ public class NetconfDeviceOutputEventListenerLifetime implements NetconfDeviceOu
 
     private void processEvent(String ipsecSaName) {
         try {
-            //log.info("Soft lifetime expired for IPsec SA Name: {}", ipsecSaName);
             StorageHandler.rekey(ipsecSaName);
         } catch (Exception e) {
             log.error("Error processing NETCONF event", e);

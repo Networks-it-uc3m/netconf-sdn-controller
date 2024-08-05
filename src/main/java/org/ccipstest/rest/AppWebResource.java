@@ -18,27 +18,17 @@ package org.ccipstest.rest;
 
 import org.ccipstest.app.*;
 import org.onosproject.net.DeviceId;
-import org.onosproject.netconf.DatastoreId;
-import org.onosproject.netconf.NetconfController;
 import org.onosproject.netconf.NetconfSession;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.onosproject.rest.AbstractWebResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-
-import static org.slf4j.LoggerFactory.getLogger;
-
 import java.util.UUID;
 import java.util.regex.Pattern;
 /**
- * Sample web resource.
+ * Web resource.
  */
 
 @Path("ccips")
@@ -51,6 +41,11 @@ public class AppWebResource extends AbstractWebResource {
     public Response createIpsecConfig(RequestDTO reqdto) throws Exception {
         try {
             reqdto.validate();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Error creating Ipsec config: " + e.getMessage() + "\n").build();
+        }
+        Handler h;
+        try {
             request req = RequestDTO.transformToRequest(reqdto);
             String uri_device_1 = "netconf:" + req.getNodes()[0].getIpControl() + ":830";
             String uri_device_2 = "netconf:" + req.getNodes()[1].getIpControl() + ":830";
@@ -58,37 +53,46 @@ public class AppWebResource extends AbstractWebResource {
             DeviceId new_device_2 = DeviceId.deviceId(uri_device_2);
             NetconfSession newDeviceSession_1 = StorageHandler.controller.getNetconfDevice(new_device_1).getSession();
             NetconfSession newDeviceSession_2 = StorageHandler.controller.getNetconfDevice(new_device_2).getSession();
-            StorageHandler.createHandler(req, newDeviceSession_1, newDeviceSession_2);
-            return Response.ok().build();
+            h = StorageHandler.createHandler(req, newDeviceSession_1, newDeviceSession_2);
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error editing Netconf config: "+e.getMessage()+"\n").build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error creating Ipsec config: "+e.getMessage()+"\n").build();
         }
+        return Response.ok(h,MediaType.APPLICATION_JSON).build();
     }
 
     @GET
     @Path("/{id}")
     public Response getIpsecConfig(@PathParam("id") String id) throws Exception {
+        if(isIdValid(id)){
+            return Response.status(Response.Status.BAD_REQUEST).entity("Error getting tunnel information: Id is not valid\n").build();
+        }
+        Handler response = null;
         try {
-            Handler response = null;
             response = StorageHandler.storage.get(Long.parseLong(id));
             if(response==null){
-                throw new Exception("Handler with reqId : " + id + " does not exist");
+                return Response.status(Response.Status.NOT_FOUND).entity("Error getting tunnel information: Tunnel with reqId " + id + " does not exist").build();
             }
-            return Response.status(Response.Status.OK).entity(response.toString()).build();
         }catch (Exception e){
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error getting tunnel information: "+e.getMessage()+"\n").build();
         }
+        return Response.status(Response.Status.OK).entity(response.toString()).build();
     }
 
     @DELETE
     @Path("/{id}")
     public Response deleteIpsecConfig(@PathParam("id") String id) throws Exception {
-        try {
-            StorageHandler.deleteHandler(null,id);
-            return Response.ok().build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error deleting handler : "+e.getMessage()+"\n").build();
+        if (isIdValid(id)) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Error deleting tunnel: Id is not valid\n").build();
         }
+        try {
+            StorageHandler.deleteHandler(id);
+        } catch (Exception e) {
+            if (e.getMessage().contains("Handler with id") && e.getMessage().contains("does not exist")) {
+                return Response.status(Response.Status.NOT_FOUND).entity("Error deleting tunnel: " + e.getMessage() + "\n").build();
+            }
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error deleting tunnel: " + e.getMessage() + "\n").build();
+        }
+        return Response.status(Response.Status.OK).entity("Tunnel with reqId " + id + " was succesfully removed.").build();
 
     }
 
@@ -100,44 +104,15 @@ public class AppWebResource extends AbstractWebResource {
     }
 
     @POST
-    @Path("get-config-node")
-    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
-    public Response getConfigNode(RequestGetConfigDTO req) throws Exception {
-        String netconfMessage;
-        String netconfMessageXml;
-        try {
-            req.validateIPs();
-            String uri_device = "netconf:"+req.getIp()+":830";
-            DeviceId new_device = DeviceId.deviceId(uri_device);
-            NetconfSession newDeviceSession = StorageHandler.controller.getNetconfDevice(new_device).getSession();
-            netconfMessage = newDeviceSession.getConfig(DatastoreId.datastore("running"));
-            netconfMessageXml=XmlFormatter.formatXml(netconfMessage);
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error getting config: " + e.getMessage() + "\n").build();
-        }
-        return Response.ok(netconfMessageXml).build();
-    }
-
-    @POST
-    @Path("stop")
-    @Consumes({"application/yaml", MediaType.APPLICATION_JSON})
-    public Response stop(RequestReqidSpiDTO request_stop) throws Exception {
-        try {
-            request_stop.validate();
-            StorageHandler.stopTunnel(request_stop.getName(), request_stop.getReqId());
-            return Response.ok().build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error stopping tunnel" + e.getMessage() + "\n").build();
-        }
-    }
-
-    @POST
     @Path("/certificate")
     @Consumes({ "application/yaml", MediaType.APPLICATION_JSON })
     public Response createCertificate(String certificate) throws Exception {
-
-        CertificateStore.storeCertificate(certificate);
-        return Response.ok().build();
+        try {
+            CertificateStore.storeCertificate(certificate);
+            return Response.ok().build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error storing certificate: " + e.getMessage() + "\n").build();
+        }
     }
 
     @GET
@@ -165,63 +140,18 @@ public class AppWebResource extends AbstractWebResource {
         return Response.status(Response.Status.OK).entity(CertificateStore.certs.toString()).build();
     }
 
-    
-
-    public static class RequestReqidSpiDTO {
-        String reqId;
-        String name;
-
-        public String getReqId() {
-            return this.reqId;
+    public static boolean isIdValid(String id) {
+        if (id == null || id.isEmpty()) {
+            return true;
         }
 
-        public void setReqId(String reqId) {
-            this.reqId = reqId;
+        try {
+            long number = Long.parseLong(id);
+
+            return number <= 0;
+        } catch (NumberFormatException e) {
+            return true;
         }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        private void validate() throws Exception {
-            if (!isNonNegativeNumber(reqId)) throw new Exception("Invalid reqId");
-        }
-
-        private boolean isNonNegativeNumber(String value) {
-            try {
-                return Long.parseLong(value) > 0; //0 is not valid
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-    }
-
-    public static class RequestGetConfigDTO {
-        private static final Pattern IP_PATTERN = Pattern.compile(
-                "^(([0-9]{1,3}\\.){3}[0-9]{1,3})$");
-        String ip;
-
-        public String getIp() {
-            return ip;
-        }
-
-        public void setIp(String ip) {
-            this.ip = ip;
-        }
-
-        private void validateIPs() throws Exception {
-            if (!isIPValid(ip)) throw new Exception("Invalid ip format");
-        }
-
-        private boolean isIPValid(String ip) {
-            return ip != null && IP_PATTERN.matcher(ip).matches();
-        }
-
-
     }
 
     public static class RequestDTO {
@@ -263,14 +193,14 @@ public class AppWebResource extends AbstractWebResource {
         }
 
         private void validateIPs() throws Exception {
-            if (!isIPValid(ipData1)) throw new Exception("Invalid ipData1");
-            if (!isIPValid(ipControl1)) throw new Exception("Invalid ipControl1");
-            if (!isIPValid(ipData2)) throw new Exception("Invalid ipData2");
-            if (!isIPValid(ipControl2)) throw new Exception("Invalid ipControl2");
+            if (isIpValid(ipData1)) throw new Exception("Invalid ipData1");
+            if (isIpValid(ipControl1)) throw new Exception("Invalid ipControl1");
+            if (isIpValid(ipData2)) throw new Exception("Invalid ipData2");
+            if (isIpValid(ipControl2)) throw new Exception("Invalid ipControl2");
         }
 
-        private boolean isIPValid(String ip) {
-            return ip != null && IP_PATTERN.matcher(ip).matches();
+        private boolean isIpValid(String ip) {
+            return ip == null || !IP_PATTERN.matcher(ip).matches();
         }
 
         private void validateAlgs() throws Exception {
@@ -279,150 +209,24 @@ public class AppWebResource extends AbstractWebResource {
         }
 
         private void validateSoftAndHardValues() throws Exception {
-            if (!isNonNegativeNumber(nBytesSoft)) throw new Exception("Invalid nBytesSoft");
-            if (!isNonNegativeNumber(nPacketsSoft)) throw new Exception("Invalid nPacketsSoft");
-            if (!isNonNegativeNumber(nTimeSoft)) throw new Exception("Invalid nTimeSoft");
-            if (!isNonNegativeNumber(nTimeIdleSoft)) throw new Exception("Invalid nTimeIdleSoft");
-            if (!isNonNegativeNumber(nBytesHard)) throw new Exception("Invalid nBytesHard");
-            if (!isNonNegativeNumber(nPacketsHard)) throw new Exception("Invalid nPacketsHard");
-            if (!isNonNegativeNumber(nTimeHard)) throw new Exception("Invalid nTimeHard");
-            if (!isNonNegativeNumber(nTimeIdleHard)) throw new Exception("Invalid nTimeIdleHard");
+            if (isNumberNonNegative(nBytesSoft)) throw new Exception("Invalid nBytesSoft");
+            if (isNumberNonNegative(nPacketsSoft)) throw new Exception("Invalid nPacketsSoft");
+            if (isNumberNonNegative(nTimeSoft)) throw new Exception("Invalid nTimeSoft");
+            if (isNumberNonNegative(nTimeIdleSoft)) throw new Exception("Invalid nTimeIdleSoft");
+            if (isNumberNonNegative(nBytesHard)) throw new Exception("Invalid nBytesHard");
+            if (isNumberNonNegative(nPacketsHard)) throw new Exception("Invalid nPacketsHard");
+            if (isNumberNonNegative(nTimeHard)) throw new Exception("Invalid nTimeHard");
+            if (isNumberNonNegative(nTimeIdleHard)) throw new Exception("Invalid nTimeIdleHard");
         }
 
-        private boolean isNonNegativeNumber(String value) {
+        private boolean isNumberNonNegative(String value) {
             try {
-                return Long.parseLong(value) >= 0;
+                return Long.parseLong(value) < 0;
             } catch (NumberFormatException e) {
-                return false;
+                return true;
             }
         }
-        public String getNetworkInternal1() {
-            return networkInternal1;
-        }
 
-        public void setNetworkInternal1(String networkInternal1) {
-            this.networkInternal1 = networkInternal1;
-        }
-
-        public String getIpData1() {
-            return ipData1;
-        }
-
-        public void setIpData1(String ipData1) {
-            this.ipData1 = ipData1;
-        }
-
-        public String getIpControl1() {
-            return ipControl1;
-        }
-
-        public void setIpControl1(String ipControl1) {
-            this.ipControl1 = ipControl1;
-        }
-
-        public String getNetworkInternal2() {
-            return networkInternal2;
-        }
-
-        public void setNetworkInternal2(String networkInternal2) {
-            this.networkInternal2 = networkInternal2;
-        }
-
-        public String getIpData2() {
-            return ipData2;
-        }
-
-        public void setIpData2(String ipData2) {
-            this.ipData2 = ipData2;
-        }
-
-        public String getIpControl2() {
-            return ipControl2;
-        }
-
-        public void setIpControl2(String ipControl2) {
-            this.ipControl2 = ipControl2;
-        }
-
-        public String getEncAlg() {
-            return encAlg;
-        }
-
-        public void setEncAlg(String encAlg) {
-            this.encAlg = encAlg;
-        }
-
-        public String getIntalg() {
-            return intalg;
-        }
-
-        public void setIntalg(String intalg) {
-            this.intalg = intalg;
-        }
-
-        public String getnBytesSoft() {
-            return nBytesSoft;
-        }
-
-        public void setnBytesSoft(String nBytesSoft) {
-            this.nBytesSoft = nBytesSoft;
-        }
-
-        public String getnPacketsSoft() {
-            return nPacketsSoft;
-        }
-
-        public void setnPacketsSoft(String nPacketsSoft) {
-            this.nPacketsSoft = nPacketsSoft;
-        }
-
-        public String getnTimeIdleSoft() {
-            return nTimeIdleSoft;
-        }
-
-        public void setnTimeIdleSoft(String nTimeIdleSoft) {
-            this.nTimeIdleSoft = nTimeIdleSoft;
-        }
-
-        public String getnTimeSoft() {
-            return nTimeSoft;
-        }
-
-        public void setnTimeSoft(String nTimeSoft) {
-            this.nTimeSoft = nTimeSoft;
-        }
-
-        public String getnBytesHard() {
-            return nBytesHard;
-        }
-
-        public void setnBytesHard(String nBytesHard) {
-            this.nBytesHard = nBytesHard;
-        }
-
-        public String getnPacketsHard() {
-            return nPacketsHard;
-        }
-
-        public void setnPacketsHard(String nPacketsHard) {
-            this.nPacketsHard = nPacketsHard;
-        }
-
-        public String getnTimeHard() {
-            return nTimeHard;
-        }
-
-        public void setnTimeHard(String nTimeHard) {
-            this.nTimeHard = nTimeHard;
-        }
-
-        public String getnTimeIdleHard() {
-            return nTimeIdleHard;
-        }
-
-        public void setnTimeIdleHard(String nTimeIdle) {
-            this.nTimeIdleHard = nTimeIdle;
-        }
 
         @Override
         public String toString() {

@@ -134,6 +134,7 @@ public class Handler {
                 log.info("Second attempt to execute editConfig for s1DataIn succeeded");
             } catch (NetconfException ex) {
                 log.error("Second attempt to execute editConfig for s1DataIn failed: {}", ex.getMessage());
+                throw e;
             }
             return false;
         }
@@ -147,6 +148,7 @@ public class Handler {
                 log.info("Second attempt to execute editConfig for s2DataIn succeeded");
             } catch (NetconfException ex) {
                 log.error("Second attempt to execute editConfig for s2DataIn failed: {}", ex.getMessage());
+                throw e;
             }
             return false;
         }
@@ -160,6 +162,7 @@ public class Handler {
                 log.info("Second attempt to execute editConfig for s1DataOut succeeded");
             } catch (NetconfException ex) {
                 log.error("Second attempt to execute editConfig for s1DataOut failed: {}", ex.getMessage());
+                throw e;
             }
             return false;
         }
@@ -173,6 +176,7 @@ public class Handler {
                 log.info("Second attempt to execute editConfig for s2DataOut succeeded");
             } catch (NetconfException ex) {
                 log.error("Second attempt to execute editConfig for s2DataOut failed: {}", ex.getMessage());
+                throw e;
             }
             return false;
         }
@@ -304,7 +308,7 @@ public class Handler {
         return true;
     }
 
-    public boolean delete() {
+    public void delete() throws NetconfException {
         for (OutIn outIn : ids.values()) {
             String delSADXml = outIn.getCfg().createDelSAD();
             String delSPDXml = outIn.getCfg().createDelSPD();
@@ -313,24 +317,27 @@ public class Handler {
                 outIn.getS1().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
             } catch (Exception e) {
                 log.error("Error deleting SAD: {}", e.getMessage());
+                throw e;
             }
             try {
                 outIn.getS2().editConfig(DatastoreId.datastore("running"), mode, delSADXml);
             } catch (Exception e) {
                 log.error("Error deleting SAD: {}", e.getMessage());
+                throw e;
             }
             try {
                 outIn.getS1().editConfig(DatastoreId.datastore("running"), mode, delSPDXml);
             } catch (Exception e) {
                 log.error("Error deleting SPD: {}", e.getMessage());
+                throw e;
             }
             try {
                 outIn.getS2().editConfig(DatastoreId.datastore("running"), mode, delSPDXml);
             } catch (Exception e) {
                 log.error("Error deleting SPD: {}", e.getMessage());
+                throw e;
             }
         }
-        return true;
     }
 
     public boolean keyExists(String key) {
