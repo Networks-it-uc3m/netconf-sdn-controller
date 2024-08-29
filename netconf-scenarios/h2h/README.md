@@ -1,3 +1,5 @@
+# Host to Host (H2H) scenario
+![](https://github.com/Networks-it-uc3m/netconf-sdn-controller/blob/0d32413929ecf8314ce3d219f8ab964157e064e2/dockercompose_h2h.png)
 ## Prerequisites
 Make sure you have built the Docker images as mentioned in [the specified section](https://github.com/Networks-it-uc3m/netconf-sdn-controller/tree/66df380e12220a09943c60562a53e19cd69ce6ed/build)).
 
