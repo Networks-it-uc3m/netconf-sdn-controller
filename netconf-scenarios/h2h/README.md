@@ -18,7 +18,7 @@ http://localhost:8181/onos/v1/network/configuration \
 ## Step 3
 Add security configuration to ONOS:
 ```shell
-curl --location 'http://localhost:8181/onos/ccipstest-app/sample/edit-netconf' \
+curl -X POST http://localhost:8181/onos/ccips \
 -H "Content-Type: application/json" \
 -d '{
   "ipData1": "172.20.0.2",
@@ -31,11 +31,11 @@ curl --location 'http://localhost:8181/onos/ccipstest-app/sample/edit-netconf' \
   "nPacketsSoft": "10000",
   "nTimeSoft": "30",
   "nTimeIdleSoft": "100000",
-  "nBytesHard": "20000000000",
-  "nPacketsHard": "200000000",
-  "nTimeHard": "3000000",
-  "nTimeIdleHard": "12000"
-}' --user onos:rocks
+  "nBytesHard": "0",
+  "nPacketsHard": "0",
+  "nTimeHard": "0",
+  "nTimeIdleHard": "0"
+}' -w "\n%{http_code}\n" --user onos:rocks
 ```
 ## Step 4
 Monitor traffic on Router A:
