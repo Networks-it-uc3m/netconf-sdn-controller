@@ -1,14 +1,20 @@
-## 1
+## Prerequisites
+Make sure you have built the Docker images as mentioned in [the specified section](https://github.com/Networks-it-uc3m/netconf-sdn-controller/tree/66df380e12220a09943c60562a53e19cd69ce6ed/build)).
+
+## Step 1
+Start the Docker containers using Docker Compose:
 ```shell
 docker-compose up
 ```
-## 2
+## Step 2
+Apply the network configuration to ensure ONOS recognizes the devices:
 ```shell
 curl -X POST -H "content-type:application/json" \
 http://localhost:8181/onos/v1/network/configuration \
 -d @netconf-cfg.json --user onos:rocks
 ```
-## 3
+## Step 3
+Add security configuration to ONOS:
 ```shell
 curl --location 'http://localhost:8181/onos/ccipstest-app/sample/edit-netconf' \
 -H "Content-Type: application/json" \
@@ -29,12 +35,14 @@ curl --location 'http://localhost:8181/onos/ccipstest-app/sample/edit-netconf' \
   "nTimeIdleHard": "12000"
 }' --user onos:rocks
 ```
-## 4
+## Step 4
+Monitor traffic on Router A:
 ```shell
 docker exec -it router-a bash
 tcpdump
 ```
-## 5
+## Step 5
+Test connectivity from Router B by pinging Router A:
 ```shell
 docker exec -it router-b bash
 ping 172.20.0.2
