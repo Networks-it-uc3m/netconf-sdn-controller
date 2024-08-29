@@ -1,0 +1,4 @@
+<spd-entry nc:operation="delete">
+    <name>ID_NAME</name>
+    <reqid>REQ_ID</reqid>
+</spd-entry>

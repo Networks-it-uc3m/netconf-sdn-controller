@@ -1,0 +1,30 @@
+<spd-entry>
+    <name>ID_NAME</name>
+    <direction>DIRECTION</direction>
+    <reqid>REQ_ID</reqid>
+    <ipsec-policy-config>
+        <anti-replay-window-size>32</anti-replay-window-size>
+        <traffic-selector>
+            <local-prefix>LOCAL_PREFIX/32</local-prefix>
+            <remote-prefix>REMOTE_PREFIX/32</remote-prefix>
+            <inner-protocol>any</inner-protocol>
+        </traffic-selector>
+        <processing-info>
+            <action>protect</action>
+            <ipsec-sa-cfg>
+                <ext-seq-num>true</ext-seq-num>
+                <seq-overflow>false</seq-overflow>
+                <mode>transport</mode>
+                <protocol-parameters>esp</protocol-parameters>
+                <esp-algorithms>
+                    <integrity>INT_ALG</integrity>
+                    <encryption>
+                        <id>1</id>
+                        <algorithm-type>ENC_ALG</algorithm-type>
+                        <key-length>ENC_KEY_LENGTH</key-length>
+                    </encryption>
+                </esp-algorithms>
+            </ipsec-sa-cfg>
+        </processing-info>
+    </ipsec-policy-config>
+</spd-entry>

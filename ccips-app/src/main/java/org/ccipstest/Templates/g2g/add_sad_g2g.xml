@@ -1,0 +1,44 @@
+
+<sad-entry>
+    <name>ID_NAME</name>
+    <reqid>REQ_ID</reqid>
+    <ipsec-sa-config>
+        <spi>SPI</spi>
+        <ext-seq-num>true</ext-seq-num>
+        <seq-overflow>false</seq-overflow>
+        <traffic-selector>
+            <local-prefix>LOCAL_PREFIX</local-prefix>
+            <remote-prefix>REMOTE_PREFIX</remote-prefix>
+            <inner-protocol>any</inner-protocol>
+        </traffic-selector>
+        <protocol-parameters>esp</protocol-parameters>
+        <mode>tunnel</mode>
+        <esp-sa>
+            <encryption>
+                <encryption-algorithm>ENC_ALG</encryption-algorithm>
+                <key>ENC_KEY</key>
+                <iv>ENC_IV</iv>
+            </encryption>
+            <integrity>
+                <integrity-algorithm>INT_ALG</integrity-algorithm>
+                <key>INT_KEY</key>
+            </integrity>
+        </esp-sa>
+        <sa-lifetime-hard>
+            <bytes>HARD_BYTES</bytes>
+            <packets>HARD_PACKETS</packets>
+            <time>HARD_TIME</time>
+            <idle>HARD_IDLE</idle>
+        </sa-lifetime-hard>
+        <sa-lifetime-soft>
+            <bytes>SOFT_BYTES</bytes>
+            <packets>SOFT_PACKETS</packets>
+            <time>SOFT_TIME</time>
+            <idle>SOFT_IDLE</idle>
+        </sa-lifetime-soft>
+        <tunnel>
+            <local>LOCAL_TUNNEL</local>
+            <remote>REMOTE_TUNNEL</remote>
+        </tunnel>
+    </ipsec-sa-config>
+</sad-entry>
