@@ -183,7 +183,7 @@
         <artifactId>maven-bundle-plugin</artifactId>
         <configuration>
           <instructions>
-            <Karaf-Commands>org.ccipstest.cli</Karaf-Commands>
+            <Karaf-Commands>org.ccips.cli</Karaf-Commands>
             <_wab>src/main/webapp/</_wab>
 
               <Import-Package>!com.fasterxml.jackson.dataformat,!snakeyaml,*,org.glassfish.jersey.servlet</Import-Package>

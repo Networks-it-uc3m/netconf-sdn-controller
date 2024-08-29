@@ -5,4 +5,4 @@
 !pom.xml
 !src/
 !src/**
-!.gitignore
+.gitignore
